@@ -100,7 +100,21 @@ print(es.info())
 
 ## Environment Variables
 
+Create a `.env` file in the project root with:
+
+```env
+# Database Configuration
+DATABASE_URL=postgresql://username:password@localhost:5432/roof_db
+
+# Elasticsearch Configuration
+ELASTIC_URL=https://localhost:9200
+ELASTIC_USER=your_elasticsearch_username
+ELASTIC_PASSWORD=your_elasticsearch_password
+```
+
 | Variable | Description |
 |----------|-------------|
 | `DATABASE_URL` | PostgreSQL connection string |
-| `ELASTIC_URL` | Elasticsearch server URL |
+| `ELASTIC_URL` | Elasticsearch server URL (use https://localhost:9200) |
+| `ELASTIC_USER` | Elasticsearch username |
+| `ELASTIC_PASSWORD` | Elasticsearch password |
