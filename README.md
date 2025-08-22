@@ -1,120 +1,88 @@
 # Roof - Apartment Search Platform
 
-A FastAPI-based apartment search platform with Elasticsearch integration.
-
-## Quick Start
-
-### Prerequisites
-- Python 3.8+
-- PostgreSQL
-- Elasticsearch
-
-### Installation
-
-1. **Clone and setup**
-   ```bash
-   git clone <repository-url>
-   cd Roof
-   python -m venv .venv
-   source .venv/bin/activate
-   pip install fastapi uvicorn sqlalchemy psycopg2-binary elasticsearch alembic pydantic
-   ```
-
-2. **Environment setup**
-   Create `.env` file:
-   ```env
-   DATABASE_URL=postgresql://username:password@localhost:5432/roof_db
-   ELASTIC_URL=http://localhost:9200
-   ```
-
-3. **Database setup**
-   ```bash
-   alembic upgrade head
-   python app/seed.py
-   ```
-
-4. **Elasticsearch setup**
-   ```bash
-   python app/services/elasticsearch_setup.py
-   python app/utils/es_indexer.py
-   ```
-
-5. **Run the app**
-   ```bash
-   uvicorn app.main:app --reload
-   ```
-
-## API Endpoints
-
-### Search Apartments
-```
-GET /search/apartments?query={search_term}
-```
-
-**Example:**
-```bash
-curl "http://localhost:8000/search/apartments?query=Cairo"
-```
+A full-stack apartment search platform with FastAPI backend and Vue.js frontend.
 
 ## Project Structure
 
 ```
-Roof/
-├── app/
-│   ├── api/              # API routes
-│   ├── database/         # Database config
-│   ├── models/           # Pydantic models
-│   ├── schemas/          # SQLAlchemy models
-│   ├── services/         # Business logic
-│   └── utils/            # Utilities
-├── alembic/              # Database migrations
-└── main.py               # App entry point
+ROOF/
+├── backend/             # FastAPI backend
+│   └── app/
+│       ├── api/         # API endpoints
+│       ├── models/      # Pydantic models (*_pyd.py)
+│       ├── schemas/     # SQLAlchemy models (*_sql.py)
+│       ├── services/    # Business logic
+│       └── utils/       # Utilities
+├── frontend/            # Vue.js frontend
+│   ├── src/
+│   │   ├── components/  # Vue components
+│   │   ├── views/       # Page components
+│   │   ├── stores/      # Pinia stores
+│   │   └── router/      # Vue Router
+│   └── public/          # Static assets
+├── alembic/             # Database migrations
+└── .venv/               # Python virtual environment
 ```
 
-## Database Schema
+## Quick Start
 
-### Users
-- `id`, `first_name`, `last_name`, `email`, `location`
-- `flatmate_pref`, `keywords` (arrays)
+### Backend Setup
+```bash
+# Install dependencies
+pip install -r requirements.txt
 
-### Apartments
-- `id`, `title`, `description`, `location`, `apartment_type`
-- `rent_per_week`, `start_date`, `duration_len`
-- `place_accept`, `furnishing_type`, `is_pathroom_solo`
-- `parking_type`, `keywords`, `is_active`
+# Setup environment
+cp .env.example .env
+# Edit .env with your database and Elasticsearch credentials
 
-## Development
+# Database setup
+alembic upgrade head
+python backend/app/seed.py
 
-### Add new features
-1. Update models in `app/models/` and `app/schemas/`
-2. Create migration: `alembic revision --autogenerate -m "Description"`
-3. Apply: `alembic upgrade head`
-4. Add API routes in `app/api/`
+# Elasticsearch setup
+python backend/app/services/elasticsearch_setup.py
+python backend/app/utils/es_indexer.py
 
-### Test Elasticsearch
-```python
-from elasticsearch import Elasticsearch
-es = Elasticsearch("http://localhost:9200")
-print(es.info())
+# Run backend
+cd backend
+uvicorn app.main:app --reload
 ```
+
+### Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/apartments` | List apartments with pagination |
+| GET | `/apartments/{id}` | Get apartment by ID |
+| POST | `/apartments` | Create new apartment |
+| GET | `/search/apartments` | Search apartments |
+| POST | `/filter/apartments` | Filter apartments |
+| GET | `/users` | List users |
+| GET | `/users/{id}` | Get user by ID |
+| POST | `/users` | Create new user |
 
 ## Environment Variables
 
-Create a `.env` file in the project root with:
-
 ```env
-# Database Configuration
+# Database
 DATABASE_URL=postgresql://username:password@localhost:5432/roof_db
 
-# Elasticsearch Configuration
+# Elasticsearch
 ELASTIC_URL=https://localhost:9200
-ELASTIC_USER=your_elasticsearch_username
-ELASTIC_PASSWORD=your_elasticsearch_password
+ELASTIC_USER=your_username
+ELASTIC_PASSWORD=your_password
 ```
 
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `ELASTIC_URL` | Elasticsearch server URL (use https://localhost:9200) |
-| `ELASTIC_USER` | Elasticsearch username |
-| `ELASTIC_PASSWORD` | Elasticsearch password |
+## Tech Stack
+
+- **Backend**: FastAPI, SQLAlchemy, PostgreSQL, Elasticsearch
+- **Frontend**: Vue 3, TypeScript, Vite, Pinia, Vue Router
+- **Database**: PostgreSQL with Alembic migrations
+- **Search**: Elasticsearch for advanced search and filtering
