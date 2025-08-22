@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query
-from app.models.apartment import Apartment, FilterApartment
+from app.models.apartment import ApartmentFilter
 from app.services.search_service import search_apartments, filter_apartments
 
 router = APIRouter()
@@ -11,6 +11,6 @@ def search(query: str = Query(..., min_length=1, description="Search query strin
 
 
 @router.post("/filter/apartments")
-def filter(apartment: FilterApartment):
+def filter(apartment: ApartmentFilter):
     results = filter_apartments(apartment)
     return [hit["_source"]for hit in results["hits"]["hits"]]

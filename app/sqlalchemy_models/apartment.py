@@ -2,7 +2,7 @@ from sqlalchemy import Column, String, Integer, Boolean, Text, DateTime
 from sqlalchemy.dialects.postgresql import ARRAY
 from app.database.database import Base
 
-class ApartmentDB(Base):
+class Apartment(Base):
 
     __tablename__ = "apartments"
 

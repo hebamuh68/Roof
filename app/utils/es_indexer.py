@@ -1,15 +1,15 @@
 from app.services.es_client import es
 from app.database.database import SessionLocal
-from app.schemas.apartment import Apartment as ApartmentSchema
-from app.models.apartment import Apartment as ApartmentModel
+from app.schemas.apartment import ApartmentDB
+from app.models.apartment import ApartmentRequest
 
 
 def index_apartments():
     db = SessionLocal()
-    apartments = db.query(ApartmentSchema).all()
+    apartments = db.query(ApartmentDB).all()
 
     for apt in apartments:
-        apt_data = ApartmentModel.model_validate(apt).modal_dumb()
+        apt_data = ApartmentRequest.model_validate(apt).model_dump()
         es.index(index="apartments", id=apt.id, body=apt_data)
     db.close()
 

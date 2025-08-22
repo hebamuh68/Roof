@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 
-class Apartment(BaseModel):
+class ApartmentRequest(BaseModel):
     title: str
     description: str
     location: str
@@ -20,7 +20,9 @@ class Apartment(BaseModel):
     class Config:
         orm_model = True
 
-class FilterApartment(BaseModel):
+
+
+class ApartmentFilter(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     location: Optional[str] = None

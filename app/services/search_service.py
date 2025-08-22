@@ -1,4 +1,4 @@
-from app.models.apartment import Apartment, FilterApartment
+from app.models.apartment import ApartmentFilter
 from app.services.es_client import es
 
 def search_apartments(query: str):
@@ -14,7 +14,7 @@ def search_apartments(query: str):
         }
     )
 
-def filter_apartments(apartment: FilterApartment):
+def filter_apartments(apartment: ApartmentFilter):
     must_queries = []
     if apartment.location:
         must_queries.append({"match": {"location": apartment.location}})
