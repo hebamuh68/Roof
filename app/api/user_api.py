@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database.database import SessionLocal
-from app.services.apartment_service import list_apartment
-
+from app.services.user_service import list_users, get_user_by_id, create_user
+from app.models.user_pyd import UserRequest
 
 router = APIRouter()
 
@@ -17,6 +17,15 @@ def get_db():
         db.close()  # Always close the session
 
 
-@router.get("/apartments")
+@router.post("/users")
+def create(user: UserRequest,db: Session = Depends(get_db)):
+    return create_user(db,user)
+
+@router.get("/users/{user_id}")
+def get(user_id: int, db: Session = Depends(get_db)):
+    return get_user_by_id(db, user_id)
+
+
+@router.get("/users")
 def list(skip:int=0, limit:int=10, db: Session = Depends(get_db)):
-    return list_apartment(db, skip, limit)
+    return list_users(db, skip, limit)

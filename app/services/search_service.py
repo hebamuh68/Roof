@@ -1,4 +1,4 @@
-from app.models.apartment import ApartmentFilter
+from app.models.apartment_pyd import ApartmentFilter
 from app.services.es_client import es
 
 def search_apartments(query: str):

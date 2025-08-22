@@ -22,7 +22,7 @@ if config.config_file_name is not None:
 
 # --- Import DB Base and models ---
 from app.database.database import Base
-from app.schemas import user, apartment  # Import all models so Alembic can detect them
+from app.schemas import user_sql, apartment_sql  # Import all models so Alembic can detect them
 
 # --- Database URL from environment ---
 DATABASE_URL = os.getenv("DATABASE_URL")

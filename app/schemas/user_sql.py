@@ -3,7 +3,7 @@ from app.database.database import Base
 from sqlalchemy.dialects.postgresql import ARRAY
 
 
-class User(Base):
+class UserDB(Base):
 
     __tablename__ = "users"
 

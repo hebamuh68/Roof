@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query
-from app.models.apartment import ApartmentFilter
+from app.models.apartment_pyd import ApartmentFilter
 from app.services.search_service import search_apartments, filter_apartments
 
 router = APIRouter()

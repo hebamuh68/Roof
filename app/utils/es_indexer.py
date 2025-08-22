@@ -1,7 +1,7 @@
 from app.services.es_client import es
 from app.database.database import SessionLocal
-from app.schemas.apartment import ApartmentDB
-from app.models.apartment import ApartmentRequest
+from app.schemas.apartment_sql import ApartmentDB
+from app.models.apartment_pyd import ApartmentRequest
 
 
 def index_apartments():
