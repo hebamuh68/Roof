@@ -1,6 +1,6 @@
-# Roof - Apartment Search Platform
+# Roof - Online Rental App
+<img width="1510" height="1869" alt="Full project (1)" src="https://github.com/user-attachments/assets/6c11a23e-8cf4-452d-bf70-2b9070b7c31d" />
 
-A full-stack apartment search platform with FastAPI backend and Vue.js frontend.
 
 ## Project Structure
 
