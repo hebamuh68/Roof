@@ -58,6 +58,21 @@ def seed():
                 keywords=["Balcony", "Near Metro"],
                 is_active=True
             ),
+            Apartment(
+                title="Modern Studio in Maadi",
+                description="Fully furnished studio with balcony and parking.",
+                location="Maadi",
+                apartment_type="Studio",
+                rent_per_week=900,
+                start_date=datetime(2025, 10, 1, 12, 0),
+                duration_len=6,
+                place_accept="Both",
+                furnishing_type="Furnished",
+                is_pathroom_solo=True,
+                parking_type="Private",
+                keywords=["Balcony", "Parking", "Furnished"],
+                is_active=True
+            ),
         ]
 
         db.add_all(users + apartments)

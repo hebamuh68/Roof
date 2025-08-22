@@ -1,5 +1,9 @@
 from elasticsearch import Elasticsearch
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 ELASTIC_URL = os.getenv("ELASTIC_URL", "https://localhost:9200")
 ELASTIC_USER = os.getenv("ELASTIC_USER")

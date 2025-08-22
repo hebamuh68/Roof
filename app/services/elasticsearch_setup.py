@@ -1,4 +1,4 @@
-from app.services.elasticsearch import es
+from app.services.es_client import es
 
 index_body = {
     "mappings": {

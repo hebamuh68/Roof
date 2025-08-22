@@ -1,4 +1,4 @@
-from app.services.elasticsearch import es
+from app.services.es_client import es
 from app.database.database import SessionLocal
 from app.schemas.apartment import Apartment as ApartmentSchema
 from app.models.apartment import Apartment as ApartmentModel
