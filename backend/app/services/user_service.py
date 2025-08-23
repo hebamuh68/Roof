@@ -1,11 +1,18 @@
 from sqlalchemy.orm import Session
-from app.schemas.user_sql import UserDB
+from app.schemas.user_sql import UserDB, UserType
+from app.schemas.apartment_sql import ApartmentDB  # Import to resolve relationship
 from app.models.user_pyd import UserRequest
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def create_user(db: Session, user: UserRequest):
-    # Convert Pydantic model to SQLAlchemy model
-    db_user = UserDB(**user.model_dump())
+    db_user = UserDB(
+        **user.model_dump(exclude={"password", "role"}),
+        role=UserType(user.role.lower()) if user.role else UserType.SEEKER,
+        hashed_password=pwd_context.hash(user.password),
+    )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

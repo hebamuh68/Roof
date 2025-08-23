@@ -1,14 +1,27 @@
-from pydantic import BaseModel, Field
-from typing import Optional
-from datetime import datetime
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List
+
 
 class UserRequest(BaseModel):
     first_name: str
     last_name: str
-    email: str
+    email: EmailStr
     location: str
-    flatmate_pref: Optional[list[str]] = None
-    keywords: Optional[list[str]] = None
+    flatmate_pref: Optional[List[str]] = None
+    keywords: Optional[List[str]] = None
+    password: str
+    role: str = "seeker"
+
+
+class UserResponse(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    email: EmailStr
+    location: str
+    flatmate_pref: Optional[List[str]] = None
+    keywords: Optional[List[str]] = None
+    role: str
 
     class Config:
-        orm_model = True
+        from_attributes = True
