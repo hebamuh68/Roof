@@ -1,7 +1,7 @@
 from datetime import datetime
 from app.database.database import SessionLocal
-from app.schemas.user import User
-from app.schemas.apartment import Apartment
+from app.schemas.user_sql import UserDB
+from app.schemas.apartment_sql import ApartmentDB
 
 def seed():
     db = SessionLocal()

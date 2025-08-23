@@ -18,8 +18,28 @@ class ApartmentRequest(BaseModel):
     is_active: bool = True
 
     class Config:
-        orm_model = True
+        from_attributes = True
 
+
+class ApartmentResponse(BaseModel):
+    id: int
+    title: str
+    description: str
+    location: str
+    apartment_type: str
+    rent_per_week: int
+    start_date: datetime
+    duration_len: Optional[int] = None
+    place_accept: str
+    furnishing_type: str
+    is_pathroom_solo: bool
+    parking_type: str
+    keywords: Optional[list] = None
+    is_active: bool
+    renter_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True
 
 
 class ApartmentFilter(BaseModel):
@@ -38,4 +58,4 @@ class ApartmentFilter(BaseModel):
     is_active: Optional[bool] = None
 
     class Config:
-        orm_model = True
+        from_attributes = True
