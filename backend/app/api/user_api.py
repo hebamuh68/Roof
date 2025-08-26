@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database.database import SessionLocal
-from app.services.user_service import list_users, get_user_by_id, create_user
-from app.models.user_pyd import UserRequest
+from app.services.user_service import list_users, get_user_by_id, create_user, update_user, delete_user
+from app.models.user_pyd import UserRequest, UserUpdate
 
 router = APIRouter()
 
@@ -29,3 +29,11 @@ def get(user_id: int, db: Session = Depends(get_db)):
 @router.get("/users")
 def list(skip:int=0, limit:int=10, db: Session = Depends(get_db)):
     return list_users(db, skip, limit)
+
+@router.put("/users/{user_id}")
+def update(user_id: int, user_update: UserUpdate, db: Session = Depends(get_db)):
+    return update_user(db, user_id, user_update)
+
+@router.delete("/users/{user_id}")
+def delete(user_id: int, db: Session = Depends(get_db)):
+    return delete_user(db, user_id)

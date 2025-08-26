@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database.database import SessionLocal
-from app.services.apartment_service import list_apartments, create_apartment, get_apartment_by_id
-from app.models.apartment_pyd import ApartmentRequest
+from app.services.apartment_service import list_apartments, create_apartment, get_apartment_by_id, update_apartment, delete_apartment
+from app.models.apartment_pyd import ApartmentRequest, ApartmentFilter
 
 router = APIRouter()
 
@@ -29,3 +29,11 @@ def get(apartment_id: int, db: Session = Depends(get_db)):
 @router.get("/apartments")
 def list(skip:int=0, limit:int=10, db: Session = Depends(get_db)):
     return list_apartments(db, skip, limit)
+
+@router.put("/apartments/{apartment_id}")
+def update(apartment_id: int, apartment_update: ApartmentFilter, db: Session = Depends(get_db)):
+    return update_apartment(db, apartment_id, apartment_update)
+
+@router.delete("/apartments/{apartment_id}")
+def delete(apartment_id: int, db: Session = Depends(get_db)):
+    return delete_apartment(db, apartment_id)
