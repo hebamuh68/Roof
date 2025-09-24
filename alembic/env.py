@@ -22,7 +22,10 @@ if config.config_file_name is not None:
 
 # --- Import DB Base and models ---
 from backend.app.database.database import Base
-from backend.app.schemas import user_sql, apartment_sql  # Import all models so Alembic can detect them
+# Import all models so Alembic can detect them
+import sys
+sys.path.append(str(Path(__file__).resolve().parents[1] / "backend"))
+from app.schemas import user_sql, apartment_sql
 
 # --- Database URL from environment ---
 DATABASE_URL = os.getenv("DATABASE_URL")

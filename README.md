@@ -26,33 +26,46 @@ ROOF/
 
 ## Quick Start
 
-### Backend Setup
+### Mac Setup (Recommended)
+For macOS users, use the automated setup script:
+```bash
+./setup-mac.sh
+```
+
+See [README-MAC.md](README-MAC.md) for detailed Mac setup instructions.
+
+### Manual Setup
+
+#### Backend Setup
 ```bash
 # Install dependencies
-pip install -r requirements.txt
+pip install -r backend/requirements-py39.txt  # For Python 3.9
+# or
+pip install -r backend/requirements.txt       # For Python 3.10+
 
 # Setup environment
-cp .env.example .env
-# Edit .env with your database and Elasticsearch credentials
+cp backend/env.example backend/.env
+# Edit backend/.env with your database and Elasticsearch credentials
 
 # Database setup
 alembic upgrade head
 python backend/app/seed.py
 
-# Elasticsearch setup
+# Elasticsearch setup (optional)
 python backend/app/services/elasticsearch_setup.py
 python backend/app/utils/es_indexer.py
 
 # Run backend
 cd backend
+source ../.venv/bin/activate  # Activate virtual environment
 uvicorn app.main:app --reload
 ```
 
-### Frontend Setup
+#### Frontend Setup
 ```bash
 cd frontend
-npm install
-npm run dev
+pnpm install  # or npm install
+pnpm run dev  # or npm run dev
 ```
 
 ## API Endpoints
