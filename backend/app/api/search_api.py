@@ -14,3 +14,4 @@ def search(query: str = Query(..., min_length=1, description="Search query strin
 def filter(apartment: ApartmentFilter):
     results = filter_apartments(apartment)
     return [hit["_source"]for hit in results["hits"]["hits"]]
+    
