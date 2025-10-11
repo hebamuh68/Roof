@@ -10,19 +10,34 @@ const router = createRouter({
       component: HomeView
     },
     {
-      path: '/modals',
-      name: 'modals',
-      component: () => import('../views/ModalsView.vue')
+      path: '/apartments',
+      name: 'apartments',
+      component: () => import('../views/ApartmentsView.vue')
     },
     {
-      path: '/posts',
-      name: 'posts',
-      component: () => import('../views/PostsView.vue')
+      path: '/put-an-ad',
+      name: 'putAnAd',
+      component: () => import('../views/PutAnAdView.vue')
     },
     {
-      path: '/postDetail/:id',
-      name: 'postDetail',
-      component: () => import('../views/PostDetailView.vue')
+      path: '/about',
+      name: 'about',
+      component: () => import('../views/AboutView.vue')
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: () => import('../views/ContactView.vue')
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/LoginView.vue')
+    },
+    {
+      path: '/signup',
+      name: 'signup',
+      component: () => import('../views/SignUpView.vue')
     }
   ]
 })
