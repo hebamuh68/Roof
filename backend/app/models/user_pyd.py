@@ -1,18 +1,9 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
+from datetime import datetime
 
 
-class UserRequest(BaseModel):
-    first_name: str
-    last_name: str
-    email: EmailStr
-    location: str
-    flatmate_pref: Optional[List[str]] = None
-    keywords: Optional[List[str]] = None
-    password: str
-    role: str = "seeker"
-    class Config:
-        from_attributes = True
+
 
 class UserResponse(BaseModel):
     id: int
@@ -23,6 +14,7 @@ class UserResponse(BaseModel):
     flatmate_pref: Optional[List[str]] = None
     keywords: Optional[List[str]] = None
     role: str
+    created_at: datetime
 
     class Config:
         from_attributes = True
