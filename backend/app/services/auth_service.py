@@ -61,5 +61,8 @@ def get_user(current_user: User):
         "first_name": current_user.first_name,
         "last_name": current_user.last_name,
         "location": current_user.location,
-        "role": current_user.role
+        "flatmate_pref": current_user.flatmate_pref,
+        "keywords": current_user.keywords,
+        "role": current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role),
+        "created_at": getattr(current_user, 'created_at', None)
     }
