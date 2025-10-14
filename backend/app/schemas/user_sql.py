@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy import Column, Integer, String, Enum, DateTime
 from app.database.database import Base
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
+from datetime import datetime
 import enum
 
 class UserType(enum.Enum):
@@ -21,5 +22,6 @@ class UserDB(Base):
     keywords = Column(ARRAY(String), nullable=True)
     role = Column(Enum(UserType), nullable=False, default=UserType.SEEKER)
     hashed_password = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     apartments = relationship("ApartmentDB", back_populates="renter")
