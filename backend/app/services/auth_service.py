@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.models.auth_pyd import UserCreate, UserLogin, Token
-from app.schemas.user_sql import UserDB as User
+from app.schemas.user_sql import UserDB as User, UserType
 from app.utils.auth import get_password_hash, verify_password, create_access_token
 
 
@@ -16,16 +16,19 @@ def create_user(user_data: UserCreate, db: Session):
     # Hash the password
     hashed_password = get_password_hash(user_data.password)
 
+    # Convert role string to enum
+    role_enum = UserType.SEEKER if user_data.role == "seeker" else UserType.RENTER
+
     # Create new user
     new_user = User(
         first_name=user_data.first_name,
         last_name=user_data.last_name,
         email=user_data.email,
         location=user_data.location,
-        flatmate_pref=user_data.flatmate_pref,
-        keywords=user_data.keywords,
+        flatmate_pref=user_data.flatmate_pref or [],
+        keywords=user_data.keywords or [],
         hashed_password=hashed_password,
-        role=user_data.role
+        role=role_enum
     )
 
     db.add(new_user)
