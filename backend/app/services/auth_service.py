@@ -1,11 +1,12 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from app.models.auth_pyd import UserCreate, UserLogin, Token
+from app.models.auth_pyd import Token
+from app.models.user_pyd import UserData, UserLogin
 from app.schemas.user_sql import UserDB as User, UserType
 from app.utils.auth import get_password_hash, verify_password, create_access_token
 
 
-def create_user(user_data: UserCreate, db: Session):
+def create_user(user_data: UserData, db: Session):
     existing_user = db.query(User).filter(User.email == user_data.email).first()
     if existing_user:
         raise HTTPException(

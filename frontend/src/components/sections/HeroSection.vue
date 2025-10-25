@@ -7,9 +7,7 @@
       </h1>
       <p
         class="text-lg md:text-base lg:text-xl mb-8 text-left px-4 py-2 relative overflow-hidden"
-        style="
-          background: linear-gradient(90deg, rgba(255,255,255,0.33) 0%, rgba(255,255,255,0.1) 75%, rgba(255,255,255,0) 80%);
-        "
+
       >
         <span class="relative z-10">Rental Housing App In Egypt</span>
       </p>

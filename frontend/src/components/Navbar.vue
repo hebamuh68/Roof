@@ -131,9 +131,15 @@ const navLinks = ref([
 ])
 
 const isHomePage = computed(() => route.name === 'home')
+const isApartmentsPage = computed(() => route.name === 'apartments')
+const isPutAnAdPage = computed(() => route.name === 'putAnAd')
+const isAboutPage = computed(() => route.name === 'about')
+const isContactPage = computed(() => route.name === 'contact')
+const isLoginPage = computed(() => route.name === 'login')
+const isSignupPage = computed(() => route.name === 'signup')
 
 const navbarClasses = computed(() => {
-  if (isHomePage.value) {
+  if (isHomePage.value || isApartmentsPage.value || isPutAnAdPage.value || isAboutPage.value || isContactPage.value || isLoginPage.value || isSignupPage.value) {
     return 'absolute top-0 left-0 right-0 z-50 bg-transparent'
   }
   return 'bg-white shadow-sm'

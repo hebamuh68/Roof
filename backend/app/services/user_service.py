@@ -6,12 +6,6 @@ from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def get_user_by_id(db: Session, user_id: int):
-    return db.query(UserDB).filter(UserDB.id == user_id).first()
-
-def list_users(db: Session, skip:int=0, limit:int=10):
-    return db.query(UserDB).offset(skip).limit(limit).all()
-
 def update_user(db: Session, user_id: int, user_update: UserUpdate):
     # Get the user from database
     db_user = db.query(UserDB).filter(UserDB.id == user_id).first()
@@ -36,12 +30,12 @@ def update_user(db: Session, user_id: int, user_update: UserUpdate):
     return db_user
 
 
-def delete_user(db: Session, user_id: int):
+def block_user(db: Session, user_id: int):
     db_user = db.query(UserDB).filter(UserDB.id == user_id).first()
     if not db_user:
         return None
     
-    # Delete the user
+    # Block the user
     db.delete(db_user)
     db.commit()
-    return {"message": "User deleted successfully"}
+    return {"message": "User blocked successfully"}
