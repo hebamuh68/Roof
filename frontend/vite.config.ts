@@ -19,4 +19,8 @@ export default defineConfig({
       '@assets': fileURLToPath(new URL('./src/assets/images', import.meta.url)),
     },
   },
+  define: {
+    global: 'globalThis',
+    'process.env': {},
+  },
 })
