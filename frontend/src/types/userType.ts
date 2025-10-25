@@ -20,3 +20,14 @@ export const createEmptyUserData = (): userData => ({
     keywords: [],
     role: "seeker",
 });
+
+
+export interface userLogin {
+    email: string;
+    password: string;
+}
+
+export const createEmptyUserLogin = (): userLogin => ({
+    email: "",
+    password: "",
+});
