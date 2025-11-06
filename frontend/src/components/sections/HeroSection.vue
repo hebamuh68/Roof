@@ -21,14 +21,13 @@
         <span class="relative z-10">Rental Housing App In Egypt</span>
       </p>
       <router-link to="/signup">
-        <button class="text-white px-8 py-4 rounded-full text-lg font-semibold cursor-pointer transition-all duration-300 shadow-lg hover:-translate-y-1 hover:shadow-2xl backdrop-blur-sm border border-white border-opacity-20" style="background: linear-gradient(90deg, #4BC974 0%, #00A060 100%);">
-          Get Started
-        </button>
+        <BaseButton label="Get Started" variant="primary" size="md" />
       </router-link>
     </div>
   </div>
 </template>
 
 <script setup>
-    import heroBkg from '@/assets/images/heroBkg.png'
+import heroBkg from '@/assets/images/heroBkg.png'
+import BaseButton from '../buttons/BaseButton.vue'
 </script>
