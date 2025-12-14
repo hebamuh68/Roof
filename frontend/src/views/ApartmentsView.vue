@@ -7,6 +7,22 @@
   </div>
 </template>
 
-<script setup>
-// Apartments page logic will go here
+<script setup lang="ts">
+import { listApartments } from '../services/apartmentService'
+import { onMounted, ref } from 'vue'
+import type { apartmentData } from '../types/apartmentType'
+const apartments = ref<apartmentData[]>([])
+
+const displayApartments = async () => {
+  const response = await listApartments()
+  apartments.value = response
+
+  console.log('Loaded apartments:', apartments.value.length)
+  console.log(' response.value: ', apartments.value[0])
+  console.log('response: ', response)
+}
+
+onMounted(() => {
+  displayApartments()
+})
 </script>
