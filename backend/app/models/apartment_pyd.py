@@ -18,6 +18,13 @@ Models:
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional, List
 from datetime import datetime
+from enum import Enum
+
+
+class ApartmentStatus(str, Enum):
+    DRAFT = "DRAFT"
+    PUBLISHED = "PUBLISHED"
+    ARCHIVED = "ARCHIVED"
 
 
 class ApartmentCreateInput(BaseModel):
@@ -64,6 +71,7 @@ class ApartmentCreateInput(BaseModel):
     keywords: Optional[str] = Field(None, description="Comma-separated amenities")
     is_active: bool = Field(True, description="Active listing flag")
     renter_id: Optional[int] = Field(None, description="Owner user ID")
+    status: Optional[ApartmentStatus] = ApartmentStatus.DRAFT
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -188,6 +196,13 @@ class ApartmentResponse(BaseModel):
     keywords: Optional[List[str]] = Field(None, description="Amenities list")
     is_active: bool = Field(..., description="Active status")
     renter_id: Optional[int] = Field(None, description="Owner user ID")
+    status: ApartmentStatus
+    view_count: int = Field(default=0, description="Number of views")
+    last_viewed_at: Optional[datetime] = Field(None, description="Last viewed timestamp")
+    is_featured: bool = Field(default=False, description="Featured status")
+    featured_until: Optional[datetime] = Field(None, description="Featured expiration")
+    featured_priority: int = Field(default=0, description="Featured priority level")
+
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -229,5 +244,42 @@ class ApartmentFilter(BaseModel):
     parking_type: Optional[str] = None
     keywords: Optional[List[str]] = None
     is_active: Optional[bool] = None
+    status: Optional[ApartmentStatus] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class FeaturedRequest(BaseModel):
+    """Request to feature an apartment."""
+    duration_days: int = Field(ge=1, le=90, description="Duration in days (1-90)")
+    priority: int = Field(ge=1, le=10, default=5, description="Priority level (1-10)")
+
+
+class BulkAction(str, Enum):
+    """Available bulk operation actions."""
+    PUBLISH = "PUBLISH"
+    ARCHIVE = "ARCHIVE"
+    DELETE = "DELETE"
+    ACTIVATE = "ACTIVATE"
+    DEACTIVATE = "DEACTIVATE"
+    FEATURE = "FEATURE"
+    UNFEATURE = "UNFEATURE"
+
+
+class BulkOperationRequest(BaseModel):
+    """Request for bulk operations on apartments."""
+    apartment_ids: List[int] = Field(..., min_length=1, max_length=100, description="Apartment IDs (max 100)")
+    action: BulkAction = Field(..., description="Action to perform")
+
+    # Optional parameters for specific actions
+    featured_duration_days: Optional[int] = Field(None, ge=1, le=90, description="Duration for FEATURE action")
+    featured_priority: Optional[int] = Field(None, ge=1, le=10, description="Priority for FEATURE action")
+
+
+class BulkOperationResponse(BaseModel):
+    """Response from bulk operations."""
+    total_requested: int = Field(..., description="Total apartments requested")
+    successful: int = Field(..., description="Successfully processed")
+    failed: int = Field(..., description="Failed to process")
+    errors: List[dict] = Field(default_factory=list, description="Error details")
+    updated_apartments: List[int] = Field(default_factory=list, description="IDs of updated apartments")

@@ -22,12 +22,13 @@ Functions:
 """
 
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from fastapi import UploadFile, HTTPException, status
-from typing import List
+from typing import List, Optional
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from app.schemas.apartment_sql import ApartmentDB
+from app.schemas.apartment_sql import ApartmentDB, ApartmentStatus
 from app.models.apartment_pyd import ApartmentRequest, ApartmentFilter, ApartmentCreateInput
 from app.utils.image_upload import save_multiple_images, get_image_url, delete_image_file
 
@@ -159,7 +160,7 @@ async def create_apartment(
 # Read Operations
 # ===========================
 
-def get_apartment_by_id(db: Session, apartment_id: int) -> ApartmentDB | None:
+def get_apartment_by_id(db: Session, apartment_id: int) -> Optional[ApartmentDB]:
     """
     Retrieve a single apartment by its unique ID.
 
@@ -232,7 +233,8 @@ def get_my_apartments_count(db: Session, renter_id: int) -> int:
 def list_apartments(
     db: Session,
     skip: int = 0,
-    limit: int = 10
+    limit: int = 10,
+    include_drafts: bool = False
 ) -> List[ApartmentDB]:
     """
     List all apartments with pagination.
@@ -244,6 +246,7 @@ def list_apartments(
         db: Database session
         skip: Number of records to skip (for pagination)
         limit: Maximum number of records to return
+        include_drafts: If False, excludes DRAFT apartments
 
     Returns:
         List[ApartmentDB]: List of apartment objects
@@ -253,7 +256,13 @@ def list_apartments(
         - Add sorting options
         - Add search functionality
     """
-    return db.query(ApartmentDB)\
+
+    query = db.query(ApartmentDB)
+
+    if not include_drafts:
+        query = query.filter(ApartmentDB.status == ApartmentStatus.PUBLISHED)
+
+    return query\
         .order_by(ApartmentDB.created_at.desc())\
         .offset(skip)\
         .limit(limit)\
@@ -268,7 +277,7 @@ def update_apartment(
     db: Session,
     apartment_id: int,
     apartment_data: ApartmentFilter
-) -> ApartmentDB | None:
+) -> Optional[ApartmentDB]:
     """
     Update an existing apartment with partial data.
 
@@ -310,12 +319,361 @@ def update_apartment(
     db.refresh(db_apartment)
     return db_apartment
 
+def publish_apartment(db: Session, apartment_id: int):
+    """Publish a draft apartment."""
+    apartment = get_apartment_by_id(db, apartment_id)
+    if not apartment:
+        return None
+
+    apartment.status = ApartmentStatus.PUBLISHED
+    apartment.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(apartment)
+    return apartment
+
+def archive_apartment(db: Session, apartment_id: int):
+    """Archive a published apartment."""
+    apartment = get_apartment_by_id(db, apartment_id)
+    if not apartment:
+        return None
+
+    apartment.status = ApartmentStatus.ARCHIVED
+    apartment.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(apartment)
+    return apartment
+
+
+def increment_view_count(db: Session, apartment_id: int) -> Optional[ApartmentDB]:
+    """
+    Increment view count for an apartment.
+    This should be called when someone views apartment details.
+
+    Args:
+        db: Database session
+        apartment_id: ID of the apartment being viewed
+
+    Returns:
+        ApartmentDB: Updated apartment object, or None if not found
+    """
+    apartment = db.query(ApartmentDB).filter(ApartmentDB.id == apartment_id).first()
+    if apartment:
+        apartment.view_count += 1
+        apartment.last_viewed_at = datetime.utcnow()
+        db.commit()
+        db.refresh(apartment)
+    return apartment
+
+
+def get_popular_apartments(db: Session, limit: int = 10) -> List[ApartmentDB]:
+    """
+    Get most viewed apartments.
+
+    Args:
+        db: Database session
+        limit: Maximum number of apartments to return
+
+    Returns:
+        List[ApartmentDB]: List of most viewed apartments
+    """
+    return db.query(ApartmentDB)\
+        .filter(ApartmentDB.status == ApartmentStatus.PUBLISHED)\
+        .filter(ApartmentDB.is_active == True)\
+        .order_by(ApartmentDB.view_count.desc())\
+        .limit(limit)\
+        .all()
+
+
+# ===========================
+# Featured Listing Operations
+# ===========================
+
+def feature_apartment(
+    db: Session,
+    apartment_id: int,
+    duration_days: int,
+    priority: int = 5
+) -> Optional[ApartmentDB]:
+    """
+    Feature an apartment for a specific duration.
+
+    Args:
+        db: Database session
+        apartment_id: ID of apartment to feature
+        duration_days: How long to feature (in days)
+        priority: Priority level (1-10, higher = more prominent)
+
+    Returns:
+        ApartmentDB: Updated apartment object, or None if not found
+    """
+    apartment = get_apartment_by_id(db, apartment_id)
+    if not apartment:
+        return None
+
+    apartment.is_featured = True
+    apartment.featured_until = datetime.utcnow() + timedelta(days=duration_days)
+    apartment.featured_priority = priority
+    apartment.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(apartment)
+    return apartment
+
+
+def unfeature_apartment(db: Session, apartment_id: int) -> Optional[ApartmentDB]:
+    """
+    Remove featured status from apartment.
+
+    Args:
+        db: Database session
+        apartment_id: ID of apartment to unfeature
+
+    Returns:
+        ApartmentDB: Updated apartment object, or None if not found
+    """
+    apartment = get_apartment_by_id(db, apartment_id)
+    if not apartment:
+        return None
+
+    apartment.is_featured = False
+    apartment.featured_until = None
+    apartment.featured_priority = 0
+    apartment.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(apartment)
+    return apartment
+
+
+def get_featured_apartments(db: Session, limit: int = 10) -> List[ApartmentDB]:
+    """
+    Get currently featured apartments.
+    Only returns apartments that are:
+    - Marked as featured
+    - Featured period hasn't expired
+    - Published and active
+
+    Ordered by priority (highest first), then creation date.
+
+    Args:
+        db: Database session
+        limit: Maximum number of apartments to return
+
+    Returns:
+        List[ApartmentDB]: List of featured apartments
+    """
+    now = datetime.utcnow()
+
+    return db.query(ApartmentDB)\
+        .filter(ApartmentDB.is_featured == True)\
+        .filter(ApartmentDB.status == ApartmentStatus.PUBLISHED)\
+        .filter(ApartmentDB.is_active == True)\
+        .filter(
+            or_(
+                ApartmentDB.featured_until.is_(None),
+                ApartmentDB.featured_until > now
+            )
+        )\
+        .order_by(
+            ApartmentDB.featured_priority.desc(),
+            ApartmentDB.created_at.desc()
+        )\
+        .limit(limit)\
+        .all()
+
+
+def expire_featured_apartments(db: Session) -> int:
+    """
+    Background task to automatically expire featured apartments.
+    Should be run periodically (e.g., daily cron job).
+
+    Args:
+        db: Database session
+
+    Returns:
+        int: Number of apartments expired
+    """
+    now = datetime.utcnow()
+
+    expired = db.query(ApartmentDB)\
+        .filter(ApartmentDB.is_featured == True)\
+        .filter(ApartmentDB.featured_until <= now)\
+        .all()
+
+    for apartment in expired:
+        apartment.is_featured = False
+        apartment.featured_priority = 0
+
+    db.commit()
+    return len(expired)
+
+
+# ===========================
+# Duplication Operations
+# ===========================
+
+def duplicate_apartment(
+    db: Session,
+    apartment_id: int,
+    new_renter_id: Optional[int] = None
+) -> Optional[ApartmentDB]:
+    """
+    Create a copy of an existing apartment.
+
+    Args:
+        db: Database session
+        apartment_id: ID of apartment to duplicate
+        new_renter_id: ID of user who will own the duplicate (defaults to original owner)
+
+    Returns:
+        ApartmentDB: New apartment object (duplicate), or None if original not found
+    """
+    original = get_apartment_by_id(db, apartment_id)
+    if not original:
+        return None
+
+    # Create a dictionary of the original apartment's data
+    apartment_data = {
+        "title": f"{original.title} (Copy)",
+        "description": original.description,
+        "location": original.location,
+        "apartment_type": original.apartment_type,
+        "rent_per_week": original.rent_per_week,
+        "start_date": original.start_date,
+        "duration_len": original.duration_len,
+        "place_accept": original.place_accept,
+        "furnishing_type": original.furnishing_type,
+        "is_pathroom_solo": original.is_pathroom_solo,
+        "parking_type": original.parking_type,
+        "keywords": original.keywords[:] if original.keywords else [],  # Copy list
+        "images": original.images[:] if original.images else [],  # Copy list
+        "is_active": True,
+        "status": ApartmentStatus.DRAFT,  # New duplicates start as drafts
+        "renter_id": new_renter_id or original.renter_id,
+        # Don't copy these fields
+        "view_count": 0,
+        "is_featured": False,
+        "featured_until": None,
+        "featured_priority": 0,
+    }
+
+    # Create new apartment
+    duplicate = ApartmentDB(**apartment_data)
+    db.add(duplicate)
+    db.commit()
+    db.refresh(duplicate)
+
+    return duplicate
+
+
+# ===========================
+# Bulk Operations
+# ===========================
+
+def bulk_operation(
+    db: Session,
+    apartment_ids: List[int],
+    action: str,
+    user_id: int,
+    **kwargs
+) -> dict:
+    """
+    Perform bulk operation on multiple apartments.
+
+    Args:
+        db: Database session
+        apartment_ids: List of apartment IDs
+        action: The bulk action to perform (PUBLISH, ARCHIVE, DELETE, etc.)
+        user_id: ID of user performing action (for ownership check)
+        **kwargs: Additional parameters for specific actions
+
+    Returns:
+        Dictionary with operation results
+    """
+    results = {
+        "total_requested": len(apartment_ids),
+        "successful": 0,
+        "failed": 0,
+        "errors": [],
+        "updated_apartments": []
+    }
+
+    for apt_id in apartment_ids:
+        try:
+            apartment = get_apartment_by_id(db, apt_id)
+
+            if not apartment:
+                results["failed"] += 1
+                results["errors"].append({
+                    "apartment_id": apt_id,
+                    "error": "Apartment not found"
+                })
+                continue
+
+            # Verify ownership
+            if apartment.renter_id != user_id:
+                results["failed"] += 1
+                results["errors"].append({
+                    "apartment_id": apt_id,
+                    "error": "Permission denied - not owner"
+                })
+                continue
+
+            # Perform action
+            if action == "PUBLISH":
+                apartment.status = ApartmentStatus.PUBLISHED
+
+            elif action == "ARCHIVE":
+                apartment.status = ApartmentStatus.ARCHIVED
+
+            elif action == "DELETE":
+                # Delete images
+                if apartment.images:
+                    for image_url in apartment.images:
+                        filename = Path(image_url).name
+                        delete_image_file(filename)
+                db.delete(apartment)
+                results["successful"] += 1
+                results["updated_apartments"].append(apt_id)
+                continue  # Skip the update below
+
+            elif action == "ACTIVATE":
+                apartment.is_active = True
+
+            elif action == "DEACTIVATE":
+                apartment.is_active = False
+
+            elif action == "FEATURE":
+                duration = kwargs.get('featured_duration_days', 30)
+                priority = kwargs.get('featured_priority', 5)
+                apartment.is_featured = True
+                apartment.featured_until = datetime.utcnow() + timedelta(days=duration)
+                apartment.featured_priority = priority
+
+            elif action == "UNFEATURE":
+                apartment.is_featured = False
+                apartment.featured_until = None
+                apartment.featured_priority = 0
+
+            apartment.updated_at = datetime.utcnow()
+            results["successful"] += 1
+            results["updated_apartments"].append(apt_id)
+
+        except Exception as e:
+            results["failed"] += 1
+            results["errors"].append({
+                "apartment_id": apt_id,
+                "error": str(e)
+            })
+
+    db.commit()
+    return results
 
 # ===========================
 # Delete Operations
 # ===========================
 
-def delete_apartment(db: Session, apartment_id: int) -> dict | None:
+def delete_apartment(db: Session, apartment_id: int) -> Optional[dict]:
     """
     Delete an apartment and all associated images.
 
