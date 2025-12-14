@@ -4,7 +4,7 @@ from app.models.auth_pyd import Token
 from app.models.user_pyd import UserData, UserLogin
 from app.schemas.user_sql import UserDB as User
 from app.database.database import get_db
-from app.services.auth_service import create_user, login_user
+from app.services.auth_service import create_user, login_user, get_user
 from app.middleware.auth_middleware import get_current_user
 
 
