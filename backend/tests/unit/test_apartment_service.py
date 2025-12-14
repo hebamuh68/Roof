@@ -1,8 +1,10 @@
 import pytest
 from datetime import datetime
-from app.services.apartment_service import create_apartment, get_apartment_by_id, list_apartments, delete_apartment, update_apartment
+from app.services.apartment_service import create_apartment, get_apartment_by_id, list_apartments, delete_apartment, update_apartment, get_my_apartments, get_my_apartments_count
 from tests.factories.apartment_factory import ApartmentFactory
 from app.models.apartment_pyd import ApartmentFilter, ApartmentRequest
+from app.schemas.user_sql import UserDB, UserType
+from app.schemas.apartment_sql import ApartmentDB
 
 
 class TestApartmentService:
@@ -76,6 +78,263 @@ class TestApartmentService:
         
         # Assert
         assert found is None
+
+    def test_get_my_apartments(self, db_session):
+        """Test getting apartments by renter."""
+        # Arrange - Create two users
+        user1 = UserDB(
+            first_name="John",
+            last_name="Doe",
+            email="user1@test.com",
+            location="New York",
+            role=UserDB.__table__.c.role.type.python_type.RENTER,
+            hashed_password="hashedpass123"
+        )
+        user2 = UserDB(
+            first_name="Jane",
+            last_name="Smith",
+            email="user2@test.com",
+            location="Los Angeles",
+            role=UserDB.__table__.c.role.type.python_type.RENTER,
+            hashed_password="hashedpass456"
+        )
+        db_session.add_all([user1, user2])
+        db_session.commit()
+
+        # Create apartments for user1
+        apt1 = ApartmentDB(
+            title="Apt 1",
+            location="Brooklyn",
+            apartment_type="Studio",
+            rent_per_week=500,
+            start_date=datetime.utcnow(),
+            place_accept="Students",
+            furnishing_type="Furnished",
+            is_pathroom_solo=True,
+            parking_type="Street",
+            is_active=True,
+            renter_id=user1.id
+        )
+        apt2 = ApartmentDB(
+            title="Apt 2",
+            location="Manhattan",
+            apartment_type="1BHK",
+            rent_per_week=800,
+            start_date=datetime.utcnow(),
+            place_accept="Professionals",
+            furnishing_type="Semi-Furnished",
+            is_pathroom_solo=False,
+            parking_type="Garage",
+            is_active=True,
+            renter_id=user1.id
+        )
+
+        # Create apartment for user2
+        apt3 = ApartmentDB(
+            title="Apt 3",
+            location="Santa Monica",
+            apartment_type="2BHK",
+            rent_per_week=1200,
+            start_date=datetime.utcnow(),
+            place_accept="Both",
+            furnishing_type="Unfurnished",
+            is_pathroom_solo=True,
+            parking_type="Private",
+            is_active=True,
+            renter_id=user2.id
+        )
+
+        db_session.add_all([apt1, apt2, apt3])
+        db_session.commit()
+
+        # Act - Get user1's apartments
+        my_apts = get_my_apartments(db_session, user1.id)
+
+        # Assert
+        assert len(my_apts) == 2
+        assert all(apt.renter_id == user1.id for apt in my_apts)
+        apartment_titles = [apt.title for apt in my_apts]
+        assert "Apt 1" in apartment_titles
+        assert "Apt 2" in apartment_titles
+        assert "Apt 3" not in apartment_titles
+
+    def test_get_my_apartments_with_pagination(self, db_session):
+        """Test getting user's apartments with pagination."""
+        # Arrange - Create a user
+        user = UserDB(
+            first_name="Test",
+            last_name="User",
+            email="testuser@test.com",
+            location="Chicago",
+            role=UserDB.__table__.c.role.type.python_type.RENTER,
+            hashed_password="hashedpass"
+        )
+        db_session.add(user)
+        db_session.commit()
+
+        # Create 5 apartments for the user
+        for i in range(5):
+            apt = ApartmentDB(
+                title=f"Apartment {i}",
+                location="Test City",
+                apartment_type="Studio",
+                rent_per_week=500 + (i * 100),
+                start_date=datetime.utcnow(),
+                place_accept="Both",
+                furnishing_type="Furnished",
+                is_pathroom_solo=True,
+                parking_type="None",
+                is_active=True,
+                renter_id=user.id
+            )
+            db_session.add(apt)
+        db_session.commit()
+
+        # Act - Get first page (2 items)
+        page1 = get_my_apartments(db_session, user.id, skip=0, limit=2)
+
+        # Act - Get second page (2 items)
+        page2 = get_my_apartments(db_session, user.id, skip=2, limit=2)
+
+        # Act - Get third page (remaining 1 item)
+        page3 = get_my_apartments(db_session, user.id, skip=4, limit=2)
+
+        # Assert
+        assert len(page1) == 2
+        assert len(page2) == 2
+        assert len(page3) == 1
+
+    def test_get_my_apartments_empty_result(self, db_session):
+        """Test getting apartments for user with no apartments."""
+        # Arrange - Create a user with no apartments
+        user = UserDB(
+            first_name="Empty",
+            last_name="User",
+            email="emptyuser@test.com",
+            location="Boston",
+            role=UserDB.__table__.c.role.type.python_type.RENTER,
+            hashed_password="hashedpass"
+        )
+        db_session.add(user)
+        db_session.commit()
+
+        # Act
+        my_apts = get_my_apartments(db_session, user.id)
+
+        # Assert
+        assert len(my_apts) == 0
+        assert my_apts == []
+
+    def test_get_my_apartments_count(self, db_session):
+        """Test counting user's apartments."""
+        # Arrange - Create a user
+        user = UserDB(
+            first_name="Count",
+            last_name="Test",
+            email="counttest@test.com",
+            location="Seattle",
+            role=UserDB.__table__.c.role.type.python_type.RENTER,
+            hashed_password="hashedpass"
+        )
+        db_session.add(user)
+        db_session.commit()
+
+        # Create 3 apartments for the user
+        for i in range(3):
+            apt = ApartmentDB(
+                title=f"Count Apartment {i}",
+                location="Test City",
+                apartment_type="Studio",
+                rent_per_week=600,
+                start_date=datetime.utcnow(),
+                place_accept="Both",
+                furnishing_type="Furnished",
+                is_pathroom_solo=True,
+                parking_type="None",
+                is_active=True,
+                renter_id=user.id
+            )
+            db_session.add(apt)
+        db_session.commit()
+
+        # Act
+        count = get_my_apartments_count(db_session, user.id)
+
+        # Assert
+        assert count == 3
+
+    def test_get_my_apartments_ordered_by_created_date(self, db_session):
+        """Test that user's apartments are ordered by creation date (newest first)."""
+        # Arrange - Create a user
+        user = UserDB(
+            first_name="Order",
+            last_name="Test",
+            email="ordertest@test.com",
+            location="Portland",
+            role=UserDB.__table__.c.role.type.python_type.RENTER,
+            hashed_password="hashedpass"
+        )
+        db_session.add(user)
+        db_session.commit()
+
+        # Create apartments at different times
+        from datetime import timedelta
+        base_time = datetime.utcnow()
+
+        apt_old = ApartmentDB(
+            title="Oldest Apartment",
+            location="Test City",
+            apartment_type="Studio",
+            rent_per_week=500,
+            start_date=datetime.utcnow(),
+            place_accept="Both",
+            furnishing_type="Furnished",
+            is_pathroom_solo=True,
+            parking_type="None",
+            is_active=True,
+            created_at=base_time - timedelta(days=2),
+            renter_id=user.id
+        )
+        apt_middle = ApartmentDB(
+            title="Middle Apartment",
+            location="Test City",
+            apartment_type="Studio",
+            rent_per_week=500,
+            start_date=datetime.utcnow(),
+            place_accept="Both",
+            furnishing_type="Furnished",
+            is_pathroom_solo=True,
+            parking_type="None",
+            is_active=True,
+            created_at=base_time - timedelta(days=1),
+            renter_id=user.id
+        )
+        apt_new = ApartmentDB(
+            title="Newest Apartment",
+            location="Test City",
+            apartment_type="Studio",
+            rent_per_week=500,
+            start_date=datetime.utcnow(),
+            place_accept="Both",
+            furnishing_type="Furnished",
+            is_pathroom_solo=True,
+            parking_type="None",
+            is_active=True,
+            created_at=base_time,
+            renter_id=user.id
+        )
+
+        db_session.add_all([apt_old, apt_middle, apt_new])
+        db_session.commit()
+
+        # Act
+        my_apts = get_my_apartments(db_session, user.id)
+
+        # Assert - Should be ordered newest first
+        assert len(my_apts) == 3
+        assert my_apts[0].title == "Newest Apartment"
+        assert my_apts[1].title == "Middle Apartment"
+        assert my_apts[2].title == "Oldest Apartment"
 
     def test_list_apartments_with_pagination(self, db_session, apartment_factory):
         """Test apartment listing with pagination parameters."""
