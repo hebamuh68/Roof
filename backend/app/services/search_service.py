@@ -15,7 +15,10 @@ def search_apartments(query: str):
     )
 
 def filter_apartments(apartment: ApartmentFilter):
-    must_queries = []
+    must_queries = [
+        {"term": {"status.keyword": "PUBLISHED"}},
+        {"term": {"is_active": True}}
+    ]
     if apartment.location:
         must_queries.append({"match": {"location": apartment.location}})
     if apartment.apartment_type:
@@ -34,8 +37,6 @@ def filter_apartments(apartment: ApartmentFilter):
         must_queries.append({"term": {"is_pathroom_solo": apartment.is_pathroom_solo}})
     if apartment.parking_type:
         must_queries.append({"match": {"parking_type": apartment.parking_type}})
-    if apartment.is_active is not None:
-        must_queries.append({"term": {"is_active": apartment.is_active}})
 
 
     should_queries = []

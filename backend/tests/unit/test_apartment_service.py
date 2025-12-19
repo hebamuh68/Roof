@@ -1,10 +1,10 @@
 import pytest
-from datetime import datetime
-from app.services.apartment_service import create_apartment, get_apartment_by_id, list_apartments, delete_apartment, update_apartment, get_my_apartments, get_my_apartments_count
+from datetime import datetime, timedelta
+from app.services.apartment_service import create_apartment, get_apartment_by_id, list_apartments, delete_apartment, update_apartment, get_my_apartments, get_my_apartments_count, publish_apartment, increment_view_count, feature_apartment, get_featured_apartments, duplicate_apartment, bulk_operation
 from tests.factories.apartment_factory import ApartmentFactory
 from app.models.apartment_pyd import ApartmentFilter, ApartmentRequest
 from app.schemas.user_sql import UserDB, UserType
-from app.schemas.apartment_sql import ApartmentDB
+from app.schemas.apartment_sql import ApartmentDB, ApartmentStatus
 
 
 class TestApartmentService:
@@ -446,6 +446,410 @@ class TestApartmentService:
         """Test deleting non-existent apartment returns None."""
         # Act
         result = delete_apartment(db_session, 99999)
-        
+
         # Assert
         assert result is None
+
+    def test_publish_apartment(self, db_session):
+        """Test publishing a draft apartment."""
+        # Arrange - Create a draft apartment
+        apartment = ApartmentDB(
+            title="Test",
+            description="Test description",
+            location="Test City",
+            apartment_type="Studio",
+            rent_per_week=500,
+            start_date=datetime.utcnow(),
+            place_accept="Both",
+            furnishing_type="Furnished",
+            is_pathroom_solo=True,
+            parking_type="None",
+            is_active=True,
+            status=ApartmentStatus.DRAFT
+        )
+        db_session.add(apartment)
+        db_session.commit()
+
+        # Store created_at for comparison
+        created_at = apartment.created_at
+
+        # Act
+        published = publish_apartment(db_session, apartment.id)
+
+        # Assert
+        assert published is not None
+        assert published.status == ApartmentStatus.PUBLISHED
+        assert published.updated_at > created_at
+
+    def test_list_apartments_excludes_drafts(self, db_session):
+        """Test that public listing excludes drafts."""
+        # Arrange - Create a draft apartment
+        draft = ApartmentDB(
+            title="Draft",
+            description="Draft description",
+            location="Test City",
+            apartment_type="Studio",
+            rent_per_week=500,
+            start_date=datetime.utcnow(),
+            place_accept="Both",
+            furnishing_type="Furnished",
+            is_pathroom_solo=True,
+            parking_type="None",
+            is_active=True,
+            status=ApartmentStatus.DRAFT
+        )
+
+        # Create a published apartment
+        published = ApartmentDB(
+            title="Published",
+            description="Published description",
+            location="Test City",
+            apartment_type="1BHK",
+            rent_per_week=800,
+            start_date=datetime.utcnow(),
+            place_accept="Students",
+            furnishing_type="Semi-Furnished",
+            is_pathroom_solo=False,
+            parking_type="Street",
+            is_active=True,
+            status=ApartmentStatus.PUBLISHED
+        )
+
+        db_session.add_all([draft, published])
+        db_session.commit()
+
+        # Act
+        results = list_apartments(db_session, include_drafts=False)
+
+        # Assert
+        assert len(results) == 1
+        assert results[0].status == ApartmentStatus.PUBLISHED
+        assert results[0].title == "Published"
+
+    def test_increment_view_count(self, db_session):
+        """Test view count increments correctly."""
+        # Arrange - Create an apartment with initial view count
+        apartment = ApartmentDB(
+            title="Test",
+            description="Test description",
+            location="Test City",
+            apartment_type="Studio",
+            rent_per_week=500,
+            start_date=datetime.utcnow(),
+            place_accept="Both",
+            furnishing_type="Furnished",
+            is_pathroom_solo=True,
+            parking_type="None",
+            is_active=True,
+            view_count=0
+        )
+        db_session.add(apartment)
+        db_session.commit()
+
+        # Act - Increment view
+        updated = increment_view_count(db_session, apartment.id)
+
+        # Assert
+        assert updated is not None
+        assert updated.view_count == 1
+        assert updated.last_viewed_at is not None
+
+        # Act - Increment again
+        updated = increment_view_count(db_session, apartment.id)
+
+        # Assert
+        assert updated.view_count == 2
+
+    def test_feature_apartment(self, db_session):
+        """Test featuring an apartment."""
+        # Arrange - Create an apartment
+        apartment = ApartmentDB(
+            title="Test",
+            description="Test description",
+            location="Test City",
+            apartment_type="Studio",
+            rent_per_week=500,
+            start_date=datetime.utcnow(),
+            place_accept="Both",
+            furnishing_type="Furnished",
+            is_pathroom_solo=True,
+            parking_type="None",
+            is_active=True,
+            is_featured=False
+        )
+        db_session.add(apartment)
+        db_session.commit()
+
+        # Act - Feature the apartment
+        featured = feature_apartment(db_session, apartment.id, 30, 8)
+
+        # Assert
+        assert featured is not None
+        assert featured.is_featured == True
+        assert featured.featured_priority == 8
+        assert featured.featured_until is not None
+
+    def test_get_featured_apartments_excludes_expired(self, db_session):
+        """Test that expired featured apartments are excluded."""
+        # Arrange - Create active featured apartment
+        active = ApartmentDB(
+            title="Active",
+            description="Active description",
+            location="Test City",
+            apartment_type="Studio",
+            rent_per_week=500,
+            start_date=datetime.utcnow(),
+            place_accept="Both",
+            furnishing_type="Furnished",
+            is_pathroom_solo=True,
+            parking_type="None",
+            is_active=True,
+            status=ApartmentStatus.PUBLISHED,
+            is_featured=True,
+            featured_until=datetime.utcnow() + timedelta(days=5),
+            featured_priority=5
+        )
+
+        # Create expired featured apartment
+        expired = ApartmentDB(
+            title="Expired",
+            description="Expired description",
+            location="Test City",
+            apartment_type="1BHK",
+            rent_per_week=800,
+            start_date=datetime.utcnow(),
+            place_accept="Students",
+            furnishing_type="Semi-Furnished",
+            is_pathroom_solo=False,
+            parking_type="Street",
+            is_active=True,
+            status=ApartmentStatus.PUBLISHED,
+            is_featured=True,
+            featured_until=datetime.utcnow() - timedelta(days=1),
+            featured_priority=3
+        )
+
+        db_session.add_all([active, expired])
+        db_session.commit()
+
+        # Act
+        results = get_featured_apartments(db_session)
+
+        # Assert
+        assert len(results) == 1
+        assert results[0].title == "Active"
+
+    def test_duplicate_apartment(self, db_session):
+        """Test apartment duplication."""
+        # Arrange - Create original apartment
+        original = ApartmentDB(
+            title="Original",
+            description="Original description",
+            location="Test City",
+            apartment_type="Studio",
+            rent_per_week=500,
+            start_date=datetime.utcnow(),
+            place_accept="Both",
+            furnishing_type="Furnished",
+            is_pathroom_solo=True,
+            parking_type="None",
+            is_active=True,
+            keywords=["pool", "gym"],
+            images=["img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg"],
+            view_count=100,
+            is_featured=True,
+            featured_priority=8,
+            status=ApartmentStatus.PUBLISHED
+        )
+        db_session.add(original)
+        db_session.commit()
+
+        # Act - Duplicate the apartment
+        duplicate = duplicate_apartment(db_session, original.id)
+
+        # Assert - Check duplicated fields
+        assert duplicate is not None
+        assert duplicate.id != original.id
+        assert "Copy" in duplicate.title
+        assert duplicate.description == original.description
+        assert duplicate.keywords == original.keywords
+        assert duplicate.images == original.images
+        assert duplicate.location == original.location
+        assert duplicate.rent_per_week == original.rent_per_week
+
+        # Assert - Check reset fields
+        assert duplicate.view_count == 0
+        assert duplicate.is_featured == False
+        assert duplicate.featured_priority == 0
+        assert duplicate.status == ApartmentStatus.DRAFT
+
+    def test_bulk_publish(self, db_session):
+        """Test bulk publish operation."""
+        # Arrange - Create a user
+        user = UserDB(
+            first_name="Bulk",
+            last_name="User",
+            email="bulkuser@test.com",
+            location="Test City",
+            role=UserDB.__table__.c.role.type.python_type.RENTER,
+            hashed_password="hashedpass"
+        )
+        db_session.add(user)
+        db_session.commit()
+
+        # Create draft apartments
+        draft1 = ApartmentDB(
+            title="Draft 1",
+            description="Draft description 1",
+            location="Test City",
+            apartment_type="Studio",
+            rent_per_week=500,
+            start_date=datetime.utcnow(),
+            place_accept="Both",
+            furnishing_type="Furnished",
+            is_pathroom_solo=True,
+            parking_type="None",
+            is_active=True,
+            status=ApartmentStatus.DRAFT,
+            renter_id=user.id
+        )
+        draft2 = ApartmentDB(
+            title="Draft 2",
+            description="Draft description 2",
+            location="Test City",
+            apartment_type="1BHK",
+            rent_per_week=800,
+            start_date=datetime.utcnow(),
+            place_accept="Students",
+            furnishing_type="Semi-Furnished",
+            is_pathroom_solo=False,
+            parking_type="Street",
+            is_active=True,
+            status=ApartmentStatus.DRAFT,
+            renter_id=user.id
+        )
+        draft3 = ApartmentDB(
+            title="Draft 3",
+            description="Draft description 3",
+            location="Test City",
+            apartment_type="2BHK",
+            rent_per_week=1200,
+            start_date=datetime.utcnow(),
+            place_accept="Professionals",
+            furnishing_type="Unfurnished",
+            is_pathroom_solo=True,
+            parking_type="Private",
+            is_active=True,
+            status=ApartmentStatus.DRAFT,
+            renter_id=user.id
+        )
+
+        db_session.add_all([draft1, draft2, draft3])
+        db_session.commit()
+
+        # Act - Bulk publish
+        apartment_ids = [draft1.id, draft2.id, draft3.id]
+        result = bulk_operation(
+            db=db_session,
+            apartment_ids=apartment_ids,
+            action="PUBLISH",
+            user_id=user.id
+        )
+
+        # Assert
+        assert result["total_requested"] == 3
+        assert result["successful"] == 3
+        assert result["failed"] == 0
+        assert len(result["updated_apartments"]) == 3
+        assert len(result["errors"]) == 0
+
+        # Verify all apartments are published
+        db_session.refresh(draft1)
+        db_session.refresh(draft2)
+        db_session.refresh(draft3)
+
+        assert draft1.status == ApartmentStatus.PUBLISHED
+        assert draft2.status == ApartmentStatus.PUBLISHED
+        assert draft3.status == ApartmentStatus.PUBLISHED
+
+    def test_bulk_operation_ownership_validation(self, db_session):
+        """Test that bulk operations respect ownership."""
+        # Arrange - Create two users
+        user1 = UserDB(
+            first_name="User",
+            last_name="One",
+            email="user1@test.com",
+            location="Test City",
+            role=UserDB.__table__.c.role.type.python_type.RENTER,
+            hashed_password="hashedpass1"
+        )
+        user2 = UserDB(
+            first_name="User",
+            last_name="Two",
+            email="user2@test.com",
+            location="Test City",
+            role=UserDB.__table__.c.role.type.python_type.RENTER,
+            hashed_password="hashedpass2"
+        )
+        db_session.add_all([user1, user2])
+        db_session.commit()
+
+        # Create apartments owned by different users
+        apt_user1 = ApartmentDB(
+            title="User 1 Apartment",
+            description="Owned by user 1",
+            location="Test City",
+            apartment_type="Studio",
+            rent_per_week=500,
+            start_date=datetime.utcnow(),
+            place_accept="Both",
+            furnishing_type="Furnished",
+            is_pathroom_solo=True,
+            parking_type="None",
+            is_active=True,
+            status=ApartmentStatus.DRAFT,
+            renter_id=user1.id
+        )
+        apt_user2 = ApartmentDB(
+            title="User 2 Apartment",
+            description="Owned by user 2",
+            location="Test City",
+            apartment_type="1BHK",
+            rent_per_week=800,
+            start_date=datetime.utcnow(),
+            place_accept="Students",
+            furnishing_type="Semi-Furnished",
+            is_pathroom_solo=False,
+            parking_type="Street",
+            is_active=True,
+            status=ApartmentStatus.DRAFT,
+            renter_id=user2.id
+        )
+
+        db_session.add_all([apt_user1, apt_user2])
+        db_session.commit()
+
+        # Act - User 1 tries to publish both apartments (should only succeed for their own)
+        apartment_ids = [apt_user1.id, apt_user2.id]
+        result = bulk_operation(
+            db=db_session,
+            apartment_ids=apartment_ids,
+            action="PUBLISH",
+            user_id=user1.id
+        )
+
+        # Assert
+        assert result["total_requested"] == 2
+        assert result["successful"] == 1
+        assert result["failed"] == 1
+        assert len(result["updated_apartments"]) == 1
+        assert apt_user1.id in result["updated_apartments"]
+        assert apt_user2.id not in result["updated_apartments"]
+        assert len(result["errors"]) == 1
+
+        # Verify only user1's apartment was published
+        db_session.refresh(apt_user1)
+        db_session.refresh(apt_user2)
+
+        assert apt_user1.status == ApartmentStatus.PUBLISHED
+        assert apt_user2.status == ApartmentStatus.DRAFT  # Should remain draft

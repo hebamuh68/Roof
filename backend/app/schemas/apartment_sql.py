@@ -10,7 +10,8 @@ Primary Relationships:
     - Many-to-One with UserDB (renter)
 """
 
-from sqlalchemy import Column, String, Integer, Boolean, Text, DateTime, ForeignKey
+import enum
+from sqlalchemy import Column, Enum, String, Integer, Boolean, Text, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -18,6 +19,12 @@ from datetime import datetime, timezone
 
 from app.database.database import Base
 
+
+class ApartmentStatus(str, enum.Enum):
+    DRAFT = "DRAFT"
+    PUBLISHED = "PUBLISHED"
+    ARCHIVED = "ARCHIVED"
+    
 
 class ApartmentDB(Base):
     """
@@ -87,6 +94,12 @@ class ApartmentDB(Base):
 
     __tablename__ = "apartments"
 
+    status = Column(
+        Enum(ApartmentStatus),
+        nullable=False,
+        default=ApartmentStatus.DRAFT
+    )
+    
     # Primary Key
     id = Column(
         Integer,
@@ -184,6 +197,41 @@ class ApartmentDB(Base):
         nullable=False,
         default=True,
         comment="Listing active status"
+    )
+
+    # View Analytics
+    view_count = Column(
+        Integer,
+        nullable=False,
+        default=0,
+        comment="Number of times apartment was viewed"
+    )
+
+    last_viewed_at = Column(
+        DateTime,
+        nullable=True,
+        comment="Last time apartment was viewed"
+    )
+
+    # Featured Listing
+    is_featured = Column(
+        Boolean,
+        nullable=False,
+        default=False,
+        comment="Whether apartment is featured"
+    )
+
+    featured_until = Column(
+        DateTime,
+        nullable=True,
+        comment="Featured status expiration date"
+    )
+
+    featured_priority = Column(
+        Integer,
+        nullable=False,
+        default=0,
+        comment="Featured priority (higher = more prominent)"
     )
 
     # Timestamps
