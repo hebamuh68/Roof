@@ -6,6 +6,11 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from app.database.database import Base
 from tests.factories.apartment_factory import ApartmentFactory
 
+# Import all models to register them with Base metadata
+from app.schemas.user_sql import UserDB
+from app.schemas.apartment_sql import ApartmentDB
+from app.schemas.password_reset_sql import PasswordResetTokenDB
+
 # Setup test DB (you can use SQLite for speed)
 TEST_DATABASE_URL = "sqlite:///./test.db"
 
