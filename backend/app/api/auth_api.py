@@ -12,6 +12,11 @@ from app.middleware.auth_middleware import get_current_user
 from app.utils.password_reset import create_password_reset_token, verify_reset_token, mark_token_as_used
 from app.utils.email import send_password_reset_email, send_password_reset_confirmation
 from app.utils.auth import get_password_hash
+from app.utils.validators import (
+    get_password_strength_score,
+    validate_profile_completeness,
+    get_profile_completion_tips
+)
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -188,3 +193,86 @@ async def reset_password(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+
+
+# ===========================
+# Validation Endpoints
+# ===========================
+
+class PasswordStrengthRequest(BaseModel):
+    """Request model for password strength check."""
+    password: str
+
+
+@router.post("/auth/check-password-strength")
+async def check_password_strength(password_request: PasswordStrengthRequest):
+    """
+    Check password strength and provide feedback.
+
+    Returns a score (0-100), strength level, and suggestions for improvement.
+    This endpoint can be called before registration to help users create strong passwords.
+
+    Args:
+        password_request: Contains the password to check
+
+    Returns:
+        dict: Password strength analysis with score, level, and suggestions
+
+    Example:
+        >>> POST /auth/check-password-strength
+        >>> {"password": "MyP@ss123"}
+        >>> Response: {
+        ...   "score": 85,
+        ...   "strength": "Strong",
+        ...   "suggestions": [...],
+        ...   "is_acceptable": true
+        ... }
+    """
+    result = get_password_strength_score(password_request.password)
+    return result
+
+
+@router.get("/auth/profile-completeness")
+async def get_profile_completeness(current_user: User = Depends(get_current_user)):
+    """
+    Get current user's profile completeness analysis.
+
+    Returns completion percentage, missing fields, and tips for improvement.
+
+    Args:
+        current_user: Authenticated user (from token)
+
+    Returns:
+        dict: Profile completeness analysis with percentage, status, missing fields, and tips
+
+    Example:
+        >>> GET /auth/profile-completeness
+        >>> Response: {
+        ...   "completion_percentage": 60,
+        ...   "status": "Partial",
+        ...   "missing_fields": ["phone", "bio"],
+        ...   "tips": ["Add a phone number...", ...]
+        ... }
+    """
+    # Convert user object to dict for validation
+    user_dict = {
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "email": current_user.email,
+        "location": current_user.location,
+        "flatmate_pref": current_user.flatmate_pref,
+        "keywords": current_user.keywords,
+        # Optional fields (would need to be added to user model for full implementation)
+        # "phone": getattr(current_user, 'phone', None),
+        # "bio": getattr(current_user, 'bio', None),
+        # "profile_picture": getattr(current_user, 'profile_picture', None),
+        # "verified_email": getattr(current_user, 'verified_email', False)
+    }
+
+    completeness = validate_profile_completeness(user_dict)
+    tips = get_profile_completion_tips(user_dict)
+
+    return {
+        **completeness,
+        "tips": tips
+    }

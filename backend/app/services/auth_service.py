@@ -11,16 +11,40 @@ from app.utils.auth import (
     verify_refresh_token,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
+from app.utils.validators import (
+    validate_password_strength,
+    validate_email_domain,
+    validate_user_registration
+)
 
 
 def create_user(user_data: UserData, db: Session):
+    # Validate user registration data
+    is_valid, validation_errors = validate_user_registration(
+        email=user_data.email,
+        password=user_data.password,
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
+        location=user_data.location
+    )
+
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Validation failed",
+                "errors": validation_errors
+            }
+        )
+
+    # Check if email already exists
     existing_user = db.query(User).filter(User.email == user_data.email).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
         )
-    
+
     # Hash the password
     hashed_password = get_password_hash(user_data.password)
 
