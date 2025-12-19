@@ -9,11 +9,12 @@ from datetime import datetime, timezone
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+from io import BytesIO
 
 from app.api.apartment_api import router
 from app.api.apartment_api import get_db as apartment_get_db
 from app.middleware.auth_middleware import get_db as auth_get_db
-from app.schemas.user_sql import UserDB
+from app.schemas.user_sql import UserDB, UserType
 from app.schemas.apartment_sql import ApartmentDB, ApartmentStatus
 from app.utils.auth import create_access_token
 
@@ -203,3 +204,111 @@ def test_feature_apartment_ownership_validation_owner_succeeds(db_session, clien
     assert response.status_code == 200
     assert response.json()["is_featured"] == True
     assert response.json()["featured_priority"] == 8
+
+
+def test_seeker_cannot_create_apartment(db_session, client):
+    """Test that seekers cannot create apartments."""
+    # Create a SEEKER user
+    seeker = UserDB(
+        first_name="Seeker",
+        last_name="User",
+        email="seeker@test.com",
+        location="Test City",
+        role=UserType.SEEKER,
+        hashed_password="hashedpass123"
+    )
+    db_session.add(seeker)
+    db_session.commit()
+    db_session.refresh(seeker)
+
+    # SEEKER tries to create an apartment
+    seeker_token = create_access_token(data={"sub": seeker.email})
+    headers = {"Authorization": f"Bearer {seeker_token}"}
+
+    # Create mock image files
+    files = [
+        ("images", ("test1.jpg", BytesIO(b"fake image content"), "image/jpeg")),
+        ("images", ("test2.jpg", BytesIO(b"fake image content"), "image/jpeg")),
+        ("images", ("test3.jpg", BytesIO(b"fake image content"), "image/jpeg")),
+        ("images", ("test4.jpg", BytesIO(b"fake image content"), "image/jpeg")),
+    ]
+
+    # Apartment data
+    data = {
+        "title": "Test Apartment",
+        "description": "A nice apartment",
+        "location": "Test City",
+        "apartment_type": "Studio",
+        "rent_per_week": "500",
+        "start_date": datetime.now(timezone.utc).isoformat(),
+        "place_accept": "Both",
+        "furnishing_type": "Furnished",
+        "is_pathroom_solo": "false",
+        "parking_type": "None"
+    }
+
+    response = client.post(
+        "/apartments",
+        data=data,
+        files=files,
+        headers=headers
+    )
+
+    # Assert: Should receive 403 Forbidden
+    assert response.status_code == 403
+    assert "renter" in response.json()["detail"].lower()
+
+
+def test_renter_can_create_apartment(db_session, client):
+    """Test that renters can create apartments."""
+    # Create a RENTER user
+    renter = UserDB(
+        first_name="Renter",
+        last_name="User",
+        email="renter@test.com",
+        location="Test City",
+        role=UserType.RENTER,
+        hashed_password="hashedpass123"
+    )
+    db_session.add(renter)
+    db_session.commit()
+    db_session.refresh(renter)
+
+    # RENTER tries to create an apartment
+    renter_token = create_access_token(data={"sub": renter.email})
+    headers = {"Authorization": f"Bearer {renter_token}"}
+
+    # Create mock image files
+    files = [
+        ("images", ("test1.jpg", BytesIO(b"fake image content"), "image/jpeg")),
+        ("images", ("test2.jpg", BytesIO(b"fake image content"), "image/jpeg")),
+        ("images", ("test3.jpg", BytesIO(b"fake image content"), "image/jpeg")),
+        ("images", ("test4.jpg", BytesIO(b"fake image content"), "image/jpeg")),
+    ]
+
+    # Apartment data
+    data = {
+        "title": "Renter's Apartment",
+        "description": "A nice apartment by a renter",
+        "location": "Test City",
+        "apartment_type": "Studio",
+        "rent_per_week": "600",
+        "start_date": datetime.now(timezone.utc).isoformat(),
+        "place_accept": "Both",
+        "furnishing_type": "Furnished",
+        "is_pathroom_solo": "false",
+        "parking_type": "None"
+    }
+
+    response = client.post(
+        "/apartments",
+        data=data,
+        files=files,
+        headers=headers
+    )
+
+    # Assert: Should succeed with 201 Created
+    assert response.status_code == 201
+    assert response.json()["title"] == "Renter's Apartment"
+    assert response.json()["rent_per_week"] == 600
+    assert response.json()["renter_id"] == renter.id

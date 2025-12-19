@@ -8,6 +8,7 @@ import enum
 class UserType(enum.Enum):
     SEEKER = "SEEKER"
     RENTER = "RENTER"
+    ADMIN = "ADMIN"
 
 class UserDB(Base):
 

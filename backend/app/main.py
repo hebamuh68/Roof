@@ -1,7 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.api import apartment_api, search_api, user_api, auth_api
+from fastapi.responses import JSONResponse
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from app.api import apartment_api, search_api, user_api, auth_api, admin_api
 from app.schemas import user_sql, apartment_sql  # Required for SQLAlchemy relationships
 from dotenv import load_dotenv
 import os
@@ -10,7 +14,22 @@ from pathlib import Path
 # Load environment variables
 load_dotenv()
 
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI()
+app.state.limiter = limiter
+
+# Custom rate limit error handler
+@app.exception_handler(RateLimitExceeded)
+async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={
+            "detail": "Too many requests. Please try again later.",
+            "retry_after": exc.retry_after
+        }
+    )
 
 # CORS for frontend dev server
 origins = [
@@ -35,3 +54,4 @@ app.include_router(search_api.router)
 app.include_router(apartment_api.router)
 app.include_router(user_api.router)
 app.include_router(auth_api.router)
+app.include_router(admin_api.router)

@@ -18,10 +18,11 @@ from typing import List, Optional
 from app.database.database import SessionLocal
 from app.services import apartment_service
 from app.models.apartment_pyd import ApartmentFilter, ApartmentCreateInput, ApartmentResponse, ApartmentStatus, FeaturedRequest, BulkOperationRequest, BulkOperationResponse, BulkAction
-from app.schemas.user_sql import UserDB
+from app.schemas.user_sql import UserDB, UserType
 from app.middleware.auth_middleware import get_current_user
 from app.utils.apartments_utils import verify_apartment_ownership
 from app.schemas.apartment_sql import ApartmentDB
+from app.utils.rbac import require_renter
 
 router = APIRouter()
 
@@ -67,7 +68,7 @@ async def create_apartment(
     parking_type: str = Form(..., description="Parking availability (Private, Street, Garage, None)"),
     keywords: str = Form(None, description="Comma-separated amenities/keywords"),
     is_active: bool = Form(True, description="Apartment active status"),
-    current_user: UserDB = Depends(get_current_user),
+    current_user: UserDB = Depends(require_renter),
     db: Session = Depends(get_db)
 ):
     """
@@ -248,7 +249,10 @@ def update_apartment(
     """
     Update an existing apartment.
 
-    Requires authentication. Users can only update their own apartments.
+    Requires authentication.
+    - Renters can only update their own apartments
+    - Admins can update any apartment
+
     Supports partial updates - only provided fields will be updated.
 
     Args:
@@ -262,7 +266,7 @@ def update_apartment(
 
     Raises:
         HTTPException 401: Authentication required
-        HTTPException 403: Not the apartment owner
+        HTTPException 403: Not the apartment owner (for renters)
         HTTPException 404: Apartment not found
     """
     apartment = apartment_service.get_apartment_by_id(db, apartment_id)
@@ -273,8 +277,9 @@ def update_apartment(
             detail=f"Apartment with ID {apartment_id} not found"
         )
 
-    # Verify ownership before update
-    verify_apartment_ownership(apartment, current_user.id)
+    # Verify ownership before update (unless admin)
+    if current_user.role != UserType.ADMIN:
+        verify_apartment_ownership(apartment, current_user.id)
 
     # Perform update
     updated_apartment = apartment_service.update_apartment(
@@ -295,7 +300,10 @@ def delete_apartment(
     """
     Delete an apartment listing.
 
-    Requires authentication. Users can only delete their own apartments.
+    Requires authentication.
+    - Renters can only delete their own apartments
+    - Admins can delete any apartment
+
     Also deletes all associated images from the filesystem.
 
     Args:
@@ -308,7 +316,7 @@ def delete_apartment(
 
     Raises:
         HTTPException 401: Authentication required
-        HTTPException 403: Not the apartment owner
+        HTTPException 403: Not the apartment owner (for renters)
         HTTPException 404: Apartment not found
     """
     apartment = apartment_service.get_apartment_by_id(db, apartment_id)
@@ -319,8 +327,9 @@ def delete_apartment(
             detail=f"Apartment with ID {apartment_id} not found"
         )
 
-    # Verify ownership before deletion
-    verify_apartment_ownership(apartment, current_user.id)
+    # Verify ownership before deletion (unless admin)
+    if current_user.role != UserType.ADMIN:
+        verify_apartment_ownership(apartment, current_user.id)
 
     # Perform deletion
     result = apartment_service.delete_apartment(db, apartment_id)
@@ -337,7 +346,7 @@ def delete_apartment(
 @router.post("/{apartment_id}/publish", response_model=ApartmentResponse)
 async def publish_apartment(
     apartment_id: int,
-    current_user: UserDB = Depends(get_current_user),
+    current_user: UserDB = Depends(require_renter),
     db: Session = Depends(get_db)
 ):
     """Publish a draft apartment."""
@@ -357,7 +366,7 @@ async def publish_apartment(
 @router.post("/{apartment_id}/archive", response_model=ApartmentResponse)
 async def archive_apartment(
     apartment_id: int,
-    current_user: UserDB = Depends(get_current_user),
+    current_user: UserDB = Depends(require_renter),
     db: Session = Depends(get_db)
 ):
     """Archive a published apartment."""
@@ -468,7 +477,7 @@ async def get_my_apartments_analytics(
 async def feature_apartment_endpoint(
     apartment_id: int,
     featured_request: FeaturedRequest,
-    current_user: UserDB = Depends(get_current_user),
+    current_user: UserDB = Depends(require_renter),
     db: Session = Depends(get_db)
 ):
     """
@@ -511,7 +520,7 @@ async def feature_apartment_endpoint(
 @router.delete("/{apartment_id}/feature", response_model=ApartmentResponse)
 async def unfeature_apartment_endpoint(
     apartment_id: int,
-    current_user: UserDB = Depends(get_current_user),
+    current_user: UserDB = Depends(require_renter),
     db: Session = Depends(get_db)
 ):
     """
@@ -609,7 +618,7 @@ async def duplicate_apartment_endpoint(
 @router.post("/bulk-operation", response_model=BulkOperationResponse)
 async def bulk_apartment_operation(
     bulk_request: BulkOperationRequest,
-    current_user: UserDB = Depends(get_current_user),
+    current_user: UserDB = Depends(require_renter),
     db: Session = Depends(get_db)
 ):
     """

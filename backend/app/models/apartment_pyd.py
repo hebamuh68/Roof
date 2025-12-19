@@ -70,7 +70,7 @@ class ApartmentCreateInput(BaseModel):
     parking_type: str = Field(..., description="Parking availability type")
     keywords: Optional[str] = Field(None, description="Comma-separated amenities")
     is_active: bool = Field(True, description="Active listing flag")
-    renter_id: Optional[int] = Field(None, description="Owner user ID")
+    renter_id: int = Field(..., description="Owner user ID")
     status: Optional[ApartmentStatus] = ApartmentStatus.DRAFT
 
     model_config = ConfigDict(from_attributes=True)

@@ -3,7 +3,14 @@ from sqlalchemy.orm import Session
 from app.models.auth_pyd import Token
 from app.models.user_pyd import UserData, UserLogin
 from app.schemas.user_sql import UserDB as User, UserType
-from app.utils.auth import get_password_hash, verify_password, create_access_token
+from app.utils.auth import (
+    get_password_hash,
+    verify_password,
+    create_access_token,
+    create_refresh_token,
+    verify_refresh_token,
+    ACCESS_TOKEN_EXPIRE_MINUTES
+)
 
 
 def create_user(user_data: UserData, db: Session):
@@ -50,12 +57,65 @@ def login_user(credentials: UserLogin, db: Session):
             detail="Incorrect email or password"
         )
 
+    # Create both access and refresh tokens
     access_token = create_access_token(data={"sub": user.email})
+    refresh_token = create_refresh_token(data={"sub": user.email})
 
     return {
         "access_token": access_token,
-        "token_type": "bearer"
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60  # in seconds
     }
+
+
+def refresh_access_token(refresh_token: str, db: Session):
+    """
+    Generate a new access token using a valid refresh token.
+
+    Args:
+        refresh_token: The refresh token
+        db: Database session
+
+    Returns:
+        dict: New access token and metadata
+
+    Raises:
+        HTTPException: If refresh token is invalid or user not found
+    """
+    try:
+        # Verify and decode the refresh token
+        token_data = verify_refresh_token(refresh_token)
+        email = token_data.get("email")
+
+        if not email:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token"
+            )
+
+        # Verify user still exists
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found"
+            )
+
+        # Create new access token
+        access_token = create_access_token(data={"sub": user.email})
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token"
+        )
 
 
 def get_user(current_user: User):
