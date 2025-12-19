@@ -21,7 +21,7 @@ from app.models.apartment_pyd import ApartmentFilter, ApartmentCreateInput, Apar
 from app.schemas.user_sql import UserDB
 from app.middleware.auth_middleware import get_current_user
 from app.utils.apartments_utils import verify_apartment_ownership
-from backend.app.schemas.apartment_sql import ApartmentDB
+from app.schemas.apartment_sql import ApartmentDB
 
 router = APIRouter()
 
@@ -324,6 +324,8 @@ def delete_apartment(
 
     # Perform deletion
     result = apartment_service.delete_apartment(db, apartment_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Apartment deletion failed")
 
     return result
 
