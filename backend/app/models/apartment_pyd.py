@@ -20,6 +20,16 @@ from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 
+class SortOption(str, Enum):
+    """Available sort options for apartment search"""
+    RELEVANCE = "relevance"
+    PRICE_LOW_HIGH = "price_asc" 
+    PRICE_HIGH_LOW = "price_desc" 
+    DATE_NEWEST = "date_desc" 
+    DATE_OLDEST = "date_asc" 
+    VIEWS_HIGH_LOW = "views_desc" 
+    FEATURED_FIRST = "featured"
+
 
 class ApartmentStatus(str, Enum):
     DRAFT = "DRAFT"
