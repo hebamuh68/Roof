@@ -5,11 +5,12 @@ from fastapi.responses import JSONResponse
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from app.api import apartment_api, search_api, user_api, auth_api, admin_api
+from app.api import apartment_api, search_api, user_api, auth_api, admin_api, message_api
 from app.schemas import user_sql, apartment_sql  # Required for SQLAlchemy relationships
 from dotenv import load_dotenv
 import os
 from pathlib import Path
+
 
 # Load environment variables
 load_dotenv()
@@ -55,3 +56,4 @@ app.include_router(apartment_api.router)
 app.include_router(user_api.router)
 app.include_router(auth_api.router)
 app.include_router(admin_api.router)
+app.include_router(message_api.router)
