@@ -5,7 +5,7 @@ from app.schemas.user_sql import UserDB
 from app.models.message_pyd import MessageCreate, ConversationPreview, MessageResponse
 from typing import List
 from fastapi import HTTPException
-
+from app.services import notifications_service
 
 def send_message(db: Session, sender_id: int, message_data: MessageCreate) -> MessageDB:
     """
@@ -28,6 +28,9 @@ def send_message(db: Session, sender_id: int, message_data: MessageCreate) -> Me
     if sender_id == message_data.receiver_id:
         raise HTTPException(status_code=400, detail="Cannot send message to yourself")
 
+    # Get sender info for notification
+    sender = db.query(UserDB).filter(UserDB.id == sender_id).first()
+
     # Create message
     new_message = MessageDB(
         sender_id=sender_id,
@@ -38,6 +41,22 @@ def send_message(db: Session, sender_id: int, message_data: MessageCreate) -> Me
     db.add(new_message)
     db.commit()
     db.refresh(new_message)
+
+    # Create notification for receiver
+    if sender:
+        sender_name = f"{sender.first_name} {sender.last_name}".strip() or "A user"
+        try:
+            notifications_service.notify_new_message(
+                db=db,
+                receiver_id=message_data.receiver_id,
+                sender_id=sender_id,
+                sender_name=sender_name,
+                message_preview=message_data.content,
+                message_id=new_message.id
+            )
+        except Exception as e:
+            # Log error but don't fail message sending
+            print(f"Failed to create notification: {e}")
 
     return new_message
 

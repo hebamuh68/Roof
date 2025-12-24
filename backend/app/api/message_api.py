@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.database import get_db
 from app.middleware.auth_middleware import get_current_user
 from app.schemas.user_sql import UserDB
 from app.models.message_pyd import (
@@ -11,8 +10,17 @@ from app.models.message_pyd import (
 from app.services import message_service
 from typing import List
 
+from app.database.database import SessionLocal
+
 
 router = APIRouter(prefix="/messages", tags=["Messages"])
+
+def get_db():
+    db = SessionLocal()  # New session for each request
+    try:
+        yield db
+    finally:
+        db.close()  # Always close the session
 
 
 @router.post("/send", response_model=MessageResponse)
