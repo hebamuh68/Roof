@@ -10,6 +10,8 @@ from tests.factories.apartment_factory import ApartmentFactory
 from app.schemas.user_sql import UserDB
 from app.schemas.apartment_sql import ApartmentDB
 from app.schemas.password_reset_sql import PasswordResetTokenDB
+from app.schemas.message_sql import MessageDB
+from app.schemas.notifications_sql import NotificationDB
 
 # Setup test DB (you can use SQLite for speed)
 TEST_DATABASE_URL = "sqlite:///./test.db"
@@ -46,3 +48,21 @@ def apartment_factory(db_session):
     def _make(**kwargs):
         return ApartmentFactory.build(session=db_session, **kwargs)
     return _make
+
+
+def user_factory(db_session, email: str, first_name: str = "Test", last_name: str = "User", role: str = "SEEKER", location: str = "Sydney"):
+    """Factory function to create test users"""
+    from app.schemas.user_sql import UserDB, UserType
+
+    user = UserDB(
+        email=email,
+        first_name=first_name,
+        last_name=last_name,
+        location=location,
+        hashed_password="hashed_password_placeholder",
+        role=UserType(role) if isinstance(role, str) else role
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
