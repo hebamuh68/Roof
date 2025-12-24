@@ -26,15 +26,11 @@ def upgrade():
         sa.Column('sender_id', sa.Integer(), nullable=False),
         sa.Column('receiver_id', sa.Integer(), nullable=False),
         sa.Column('content', sa.Text(), nullable=False),
-        sa.Column('apartment_id', sa.Integer(), nullable=True),
-        sa.Column('is_read', sa.Boolean(), nullable=False, server_default='false'),
-        sa.Column('read_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('now()')),
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
         sa.ForeignKeyConstraint(['sender_id'], ['users.id'], ondelete='CASCADE'),
         sa.ForeignKeyConstraint(['receiver_id'], ['users.id'], ondelete='CASCADE'),
-        sa.ForeignKeyConstraint(['apartment_id'], ['apartments.id'], ondelete='SET NULL'),
     )
 
     # Create indexes for better query performance
@@ -42,11 +38,9 @@ def upgrade():
     op.create_index('idx_messages_receiver', 'messages', ['receiver_id'])
     op.create_index('idx_messages_conversation', 'messages', ['sender_id', 'receiver_id'])
     op.create_index('idx_messages_created_at', 'messages', ['created_at'])
-    op.create_index('idx_messages_apartment', 'messages', ['apartment_id'])
  
 
 def downgrade():
-    op.drop_index('idx_messages_apartment', table_name='messages')
     op.drop_index('idx_messages_created_at', table_name='messages')
     op.drop_index('idx_messages_conversation', table_name='messages')
     op.drop_index('idx_messages_receiver', table_name='messages')

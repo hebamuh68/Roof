@@ -20,27 +20,6 @@ def test_send_message(db_session: Session):
     assert message.sender_id == sender.id
     assert message.receiver_id == receiver.id
     assert message.content == "Hello, this is a test message"
-    assert message.is_read == False
-    assert message.apartment_id is None
-
-
-def test_send_message_with_apartment(db_session: Session):
-    """Test sending a message with apartment context"""
-    from tests.conftest import apartment_factory
-
-    sender = user_factory(db_session, email="sender2@test.com")
-    receiver = user_factory(db_session, email="receiver2@test.com")
-    apartment = apartment_factory(db_session, renter_id=receiver.id)
-
-    message_data = MessageCreate(
-        receiver_id=receiver.id,
-        content="I'm interested in your apartment!",
-        apartment_id=apartment.id
-    )
-
-    message = message_service.send_message(db_session, sender.id, message_data)
-
-    assert message.apartment_id == apartment.id
 
 
 def test_get_conversations(db_session: Session):
@@ -57,87 +36,6 @@ def test_get_conversations(db_session: Session):
 
     assert len(conversations) == 1
     assert conversations[0].user_id == user2.id
-    assert conversations[0].unread_count == 0  # user1 sent the message
-
-
-def test_get_conversations_with_unread(db_session: Session):
-    """Test conversations show correct unread count"""
-    user1 = user_factory(db_session, email="user3@test.com")
-    user2 = user_factory(db_session, email="user4@test.com")
-
-    # user2 sends messages to user1
-    msg1 = MessageCreate(receiver_id=user1.id, content="Message 1")
-    msg2 = MessageCreate(receiver_id=user1.id, content="Message 2")
-    message_service.send_message(db_session, user2.id, msg1)
-    message_service.send_message(db_session, user2.id, msg2)
-
-    # Get conversations for user1 (receiver)
-    conversations = message_service.get_conversations(db_session, user1.id)
-
-    assert len(conversations) == 1
-    assert conversations[0].unread_count == 2
-
-
-def test_mark_messages_as_read(db_session: Session):
-    """Test marking messages as read"""
-    sender = user_factory(db_session, email="sender3@test.com")
-    receiver = user_factory(db_session, email="receiver3@test.com")
-
-    # Send message
-    msg_data = MessageCreate(receiver_id=receiver.id, content="Test message")
-    message = message_service.send_message(db_session, sender.id, msg_data)
-
-    # Mark as read
-    updated = message_service.mark_messages_as_read(
-        db_session,
-        receiver.id,
-        [message.id]
-    )
-
-    assert updated == 1
-
-    # Verify it's marked as read
-    db_session.refresh(message)
-    assert message.is_read == True
-    assert message.read_at is not None
-
-
-def test_mark_messages_as_read_sender_cannot_mark(db_session: Session):
-    """Test that sender cannot mark their own sent message as read"""
-    sender = user_factory(db_session, email="sender4@test.com")
-    receiver = user_factory(db_session, email="receiver4@test.com")
-
-    msg_data = MessageCreate(receiver_id=receiver.id, content="Test message")
-    message = message_service.send_message(db_session, sender.id, msg_data)
-
-    # Sender tries to mark as read (should fail)
-    updated = message_service.mark_messages_as_read(
-        db_session,
-        sender.id,
-        [message.id]
-    )
-
-    assert updated == 0
-
-
-def test_get_unread_count(db_session: Session):
-    """Test getting unread message count"""
-    user1 = user_factory(db_session, email="user5@test.com")
-    user2 = user_factory(db_session, email="user6@test.com")
-
-    # Initially no unread messages
-    count = message_service.get_unread_count(db_session, user1.id)
-    assert count == 0
-
-    # user2 sends messages to user1
-    msg1 = MessageCreate(receiver_id=user1.id, content="Message 1")
-    msg2 = MessageCreate(receiver_id=user1.id, content="Message 2")
-    message_service.send_message(db_session, user2.id, msg1)
-    message_service.send_message(db_session, user2.id, msg2)
-
-    # Check unread count
-    count = message_service.get_unread_count(db_session, user1.id)
-    assert count == 2
 
 
 def test_get_conversation_thread(db_session: Session):

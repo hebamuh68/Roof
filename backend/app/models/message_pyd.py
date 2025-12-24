@@ -7,12 +7,6 @@ from datetime import datetime
 class MessageCreate(BaseModel):
     receiver_id: int = Field(..., description="ID of the message recipient")
     content: str = Field(..., min_length=1, max_length=5000, description="Message content")
-    apartment_id: Optional[int] = Field(None, description="Optional apartment ID if discussing a listing")
-
-
-# Request model for marking as read
-class MessageMarkRead(BaseModel):
-    message_ids: list[int] = Field(..., description="List of message IDs to mark as read")
 
 
 # Response model for a message
@@ -21,9 +15,6 @@ class MessageResponse(BaseModel):
     sender_id: int
     receiver_id: int
     content: str
-    apartment_id: Optional[int]
-    is_read: bool
-    read_at: Optional[datetime]
     created_at: datetime
 
     # Optional: Include sender/receiver names
@@ -40,8 +31,6 @@ class ConversationPreview(BaseModel):
     user_name: str
     last_message: str
     last_message_time: datetime
-    unread_count: int
-    apartment_id: Optional[int] = None
 
 
 # Response model for a conversation thread

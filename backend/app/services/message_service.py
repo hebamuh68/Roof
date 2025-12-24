@@ -3,8 +3,7 @@ from sqlalchemy import or_, and_, func
 from app.schemas.message_sql import MessageDB
 from app.schemas.user_sql import UserDB
 from app.models.message_pyd import MessageCreate, ConversationPreview, MessageResponse
-from typing import List, Optional
-from datetime import datetime
+from typing import List
 from fastapi import HTTPException
 
 
@@ -33,9 +32,7 @@ def send_message(db: Session, sender_id: int, message_data: MessageCreate) -> Me
     new_message = MessageDB(
         sender_id=sender_id,
         receiver_id=message_data.receiver_id,
-        content=message_data.content,
-        apartment_id=message_data.apartment_id,
-        is_read=False
+        content=message_data.content
     )
 
     db.add(new_message)
@@ -85,20 +82,11 @@ def get_conversations(db: Session, user_id: int) -> List[ConversationPreview]:
             )
         ).order_by(MessageDB.created_at.desc()).first()
 
-        # Count unread messages from other user
-        unread_count = db.query(MessageDB).filter(
-            MessageDB.sender_id == other_user_id,
-            MessageDB.receiver_id == user_id,
-            MessageDB.is_read == False
-        ).count()
-
         result.append(ConversationPreview(
             user_id=other_user_id,
             user_name=f"{other_user.first_name} {other_user.last_name}",
             last_message=last_message.content[:100] if last_message else "",
-            last_message_time=conv.last_message_time,
-            unread_count=unread_count,
-            apartment_id=last_message.apartment_id if last_message else None
+            last_message_time=conv.last_message_time
         ))
 
     # Sort by most recent first
@@ -192,46 +180,3 @@ def delete_message(db: Session, user_id: int, message_id: int) -> bool:
 
     return True
 
-
-def mark_messages_as_read(db: Session, user_id: int, message_ids: List[int]) -> int:
-    """
-    Mark messages as read (only messages received by current user).
-
-    Args:
-        db: Database session
-        user_id: Current user ID (must be the receiver)
-        message_ids: List of message IDs to mark as read
-
-    Returns:
-        Number of messages marked as read
-    """
-    # Only mark messages where current user is the receiver
-    updated = db.query(MessageDB).filter(
-        MessageDB.id.in_(message_ids),
-        MessageDB.receiver_id == user_id,
-        MessageDB.is_read == False
-    ).update({
-        "is_read": True,
-        "read_at": datetime.utcnow()
-    }, synchronize_session=False)
-
-    db.commit()
-
-    return updated
-
-
-def get_unread_count(db: Session, user_id: int) -> int:
-    """
-    Get total count of unread messages for a user.
-
-    Args:
-        db: Database session
-        user_id: Current user ID
-
-    Returns:
-        Count of unread messages
-    """
-    return db.query(MessageDB).filter(
-        MessageDB.receiver_id == user_id,
-        MessageDB.is_read == False
-    ).count()

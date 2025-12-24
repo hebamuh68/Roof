@@ -7,7 +7,6 @@ from app.models.message_pyd import (
     MessageCreate,
     MessageResponse,
     ConversationPreview,
-    MessageMarkRead,
 )
 from app.services import message_service
 from typing import List
@@ -73,30 +72,6 @@ def get_conversation(
     )
 
 
-@router.post("/mark-read")
-def mark_as_read(
-    mark_read_data: MessageMarkRead,
-    db: Session = Depends(get_db),
-    current_user: UserDB = Depends(get_current_user)
-):
-    """
-    Mark messages as read.
-
-    Only messages where current user is the receiver can be marked as read.
-    """
-    updated_count = message_service.mark_messages_as_read(
-        db,
-        current_user.id,
-        mark_read_data.message_ids
-    )
-
-    return {
-        "success": True,
-        "marked_read": updated_count,
-        "message": f"{updated_count} message(s) marked as read"
-    }
-
-
 @router.delete("/{message_id}")
 def delete_message(
     message_id: int,
@@ -115,17 +90,3 @@ def delete_message(
         "message": "Message deleted successfully"
     }
 
-
-@router.get("/unread-count")
-def get_unread_count(
-    db: Session = Depends(get_db),
-    current_user: UserDB = Depends(get_current_user)
-):
-    """
-    Get total count of unread messages for current user.
-    """
-    count = message_service.get_unread_count(db, current_user.id)
-
-    return {
-        "unread_count": count
-    }
