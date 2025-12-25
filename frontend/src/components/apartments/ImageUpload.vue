@@ -68,6 +68,11 @@ const removeExisting = (index: number) => {
 
 const getExistingImageUrl = (img: string) => {
   if (img.startsWith('http')) return img
+  // If URL already has /static/images/ prefix, just prepend base URL
+  if (img.startsWith('/static/images/')) {
+    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${img}`
+  }
+  // Otherwise, add the prefix
   return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/static/images/${img}`
 }
 </script>

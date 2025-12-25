@@ -152,6 +152,8 @@ Thumbs.db
 logs/
 temp/
 tmp/
+uploads/
+backend/uploads/
 
 # Elasticsearch
 elasticsearch_data/

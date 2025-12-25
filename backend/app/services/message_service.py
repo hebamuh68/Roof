@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, func
+from sqlalchemy import or_, and_, func, case
 from app.schemas.message_sql import MessageDB
 from app.schemas.user_sql import UserDB
 from app.models.message_pyd import MessageCreate, ConversationPreview, MessageResponse
@@ -75,7 +75,7 @@ def get_conversations(db: Session, user_id: int) -> List[ConversationPreview]:
     # Get all users the current user has exchanged messages with
     conversations = db.query(
         # Determine the other user in the conversation
-        func.CASE(
+        case(
             (MessageDB.sender_id == user_id, MessageDB.receiver_id),
             else_=MessageDB.sender_id
         ).label('other_user_id'),

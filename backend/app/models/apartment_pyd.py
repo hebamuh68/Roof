@@ -15,7 +15,7 @@ Models:
     ApartmentFilter: Partial update and filtering model
 """
 
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -213,6 +213,38 @@ class ApartmentResponse(BaseModel):
     featured_until: Optional[datetime] = Field(None, description="Featured expiration")
     featured_priority: int = Field(default=0, description="Featured priority level")
 
+    @field_validator('images', mode='before')
+    @classmethod
+    def format_image_urls(cls, v: List[str]) -> List[str]:
+        """
+        Ensure image URLs have the /static/images/ prefix.
+        
+        The database stores just filenames, but the API should return
+        full paths for the frontend to use.
+        
+        Args:
+            v: List of image URLs/filenames
+            
+        Returns:
+            List[str]: Image URLs with /static/images/ prefix
+        """
+        if not v:
+            return v
+        
+        formatted = []
+        for img_url in v:
+            if not img_url:
+                continue
+            # If it already has the prefix, keep it; otherwise add it
+            if img_url.startswith('/static/images/'):
+                formatted.append(img_url)
+            elif img_url.startswith('static/images/'):
+                formatted.append('/' + img_url)
+            else:
+                # Just a filename, add the prefix
+                formatted.append(f'/static/images/{img_url}')
+        
+        return formatted
 
     model_config = ConfigDict(from_attributes=True)
 
