@@ -1,10 +1,12 @@
 <script setup>
-import Navbar from './components/common/Navbar.vue';
+import Navbar from './components/common/Navbar.vue'
+import ToastContainer from './components/common/ToastContainer.vue'
 </script>
 
 <template>
-  <Navbar/>
+  <Navbar />
   <router-view />
+  <ToastContainer />
 </template>
 
 <style>
