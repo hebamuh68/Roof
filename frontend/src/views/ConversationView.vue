@@ -82,7 +82,7 @@
           <svg class="w-16 h-16 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
           </svg>
-          <p class="text-gray-400">No messages yet. Start the conversation!</p>
+          <p class="text-gray-400">{{ $t('common.noMessages') }}</p>
         </div>
       </div>
     </div>
@@ -96,7 +96,7 @@
               v-model="newMessage"
               @keydown.enter.exact.prevent="sendMessage"
               rows="1"
-              placeholder="Type your message..."
+              :placeholder="$t('messages.typeMessage')"
               class="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary-500 resize-none max-h-32"
               :style="{ height: textareaHeight }"
               @input="adjustTextarea"
@@ -125,8 +125,11 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useMessageStore } from '@/stores/message'
 import { useAuthStore } from '@/stores/auth'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -149,7 +152,7 @@ const otherUserName = computed(() => {
   if (conv) {
     return `${conv.other_user.first_name} ${conv.other_user.last_name}`
   }
-  return 'User'
+  return t('common.user')
 })
 
 const otherUserInitials = computed(() => {

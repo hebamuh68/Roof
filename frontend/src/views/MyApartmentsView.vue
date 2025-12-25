@@ -9,11 +9,11 @@
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">My Apartments</h1>
-          <p class="text-gray-400">Manage your apartment listings</p>
+          <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">{{ $t('myApartments.title') }}</h1>
+          <p class="text-gray-400">{{ $t('myApartments.subtitle') }}</p>
         </div>
         <router-link to="/put-an-ad">
-          <BaseButton label="+ New Listing" variant="primary" size="md" />
+          <BaseButton :label="$t('common.newListing')" variant="primary" size="md" />
         </router-link>
       </div>
 
@@ -54,10 +54,10 @@
         <svg class="w-20 h-20 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
         </svg>
-        <h3 class="text-xl font-medium text-white mb-2">No apartments yet</h3>
-        <p class="text-gray-400 mb-6">Start by creating your first listing</p>
+        <h3 class="text-xl font-medium text-white mb-2">{{ $t('common.noApartmentsYet') }}</h3>
+        <p class="text-gray-400 mb-6">{{ $t('common.startCreatingListing') }}</p>
         <router-link to="/put-an-ad">
-          <BaseButton label="Create Listing" variant="primary" size="md" />
+          <BaseButton :label="$t('common.createListing')" variant="primary" size="md" />
         </router-link>
       </div>
 
@@ -88,7 +88,7 @@
               class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold text-white"
               style="background: linear-gradient(90deg, #FF8C42 0%, #E67A3A 100%);"
             >
-              Featured
+              {{ $t('apartments.details.featured') }}
             </div>
           </div>
 
@@ -104,7 +104,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                 </svg>
-                {{ apartment.view_count || 0 }}
+                {{ apartment.view_count || 0 }} {{ $t('myApartments.views') }}
               </div>
             </div>
 
@@ -112,12 +112,12 @@
             <div class="flex gap-2">
               <router-link :to="`/apartments/${apartment.id}`" class="flex-1">
                 <button class="w-full px-3 py-2 bg-white bg-opacity-10 text-white rounded-lg text-sm font-medium hover:bg-opacity-20 transition-colors">
-                  View
+                  {{ $t('common.view') }}
                 </button>
               </router-link>
               <router-link :to="`/my-apartments/${apartment.id}/edit`" class="flex-1">
                 <button class="w-full px-3 py-2 bg-white bg-opacity-10 text-white rounded-lg text-sm font-medium hover:bg-opacity-20 transition-colors">
-                  Edit
+                  {{ $t('common.edit') }}
                 </button>
               </router-link>
               <button
@@ -152,7 +152,7 @@
             <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
-            Publish
+            {{ $t('common.publish') }}
           </button>
           <button
             v-if="selectedApartment.status === 'published'"
@@ -162,7 +162,7 @@
             <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
             </svg>
-            Archive
+            {{ $t('common.archive') }}
           </button>
           <button
             @click="handleDuplicate"
@@ -171,7 +171,7 @@
             <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
             </svg>
-            Duplicate
+            {{ $t('common.duplicate') }}
           </button>
           <button
             @click="handleDelete"
@@ -180,7 +180,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
             </svg>
-            Delete
+            {{ $t('common.delete') }}
           </button>
         </div>
       </div>
@@ -191,20 +191,20 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
       >
         <div class="bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4 border border-gray-700">
-          <h3 class="text-xl font-semibold text-white mb-2">Delete Apartment</h3>
-          <p class="text-gray-400 mb-6">Are you sure you want to delete "{{ selectedApartment?.title }}"? This action cannot be undone.</p>
+          <h3 class="text-xl font-semibold text-white mb-2">{{ $t('common.delete') }} {{ $t('putAnAd.apartmentType') }}</h3>
+          <p class="text-gray-400 mb-6">{{ $t('common.deleteConfirmation', { title: selectedApartment?.title }) }}</p>
           <div class="flex gap-3">
             <button
               @click="showDeleteModal = false"
               class="flex-1 px-4 py-2 bg-gray-700 text-white rounded-xl font-medium hover:bg-gray-600 transition-colors"
             >
-              Cancel
+              {{ $t('common.cancel') }}
             </button>
             <button
               @click="confirmDelete"
               class="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
             >
-              Delete
+              {{ $t('common.delete') }}
             </button>
           </div>
         </div>
@@ -215,10 +215,13 @@
 
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useApartmentStore } from '@/stores/apartment'
 import { useUIStore } from '@/stores/ui'
 import type { Apartment } from '@/types'
 import BaseButton from '@/components/buttons/BaseButton.vue'
+
+const { t } = useI18n()
 
 const apartmentStore = useApartmentStore()
 const uiStore = useUIStore()
@@ -229,12 +232,12 @@ const showActionsDropdown = ref(false)
 const showDeleteModal = ref(false)
 const dropdownPosition = ref({ x: 0, y: 0 })
 
-const statusTabs = [
-  { value: 'all', label: 'All' },
-  { value: 'published', label: 'Published' },
-  { value: 'draft', label: 'Drafts' },
-  { value: 'archived', label: 'Archived' }
-]
+const statusTabs = computed(() => [
+  { value: 'all', label: t('common.all') },
+  { value: 'published', label: t('common.published') },
+  { value: 'draft', label: t('common.drafts') },
+  { value: 'archived', label: t('common.archived') }
+])
 
 const myApartments = computed(() => apartmentStore.myApartments)
 const loading = computed(() => apartmentStore.loading)
@@ -274,7 +277,16 @@ const getStatusClass = (status: string) => {
 }
 
 const getStatusLabel = (status: string) => {
-  return status.charAt(0).toUpperCase() + status.slice(1)
+  switch (status) {
+    case 'published':
+      return t('common.published')
+    case 'draft':
+      return t('common.draft')
+    case 'archived':
+      return t('common.archived')
+    default:
+      return status.charAt(0).toUpperCase() + status.slice(1)
+  }
 }
 
 const showActions = (apartment: Apartment) => {
@@ -312,10 +324,10 @@ const handleArchive = async () => {
   if (!selectedApartment.value) return
   const success = await apartmentStore.archiveApartment(selectedApartment.value.id)
   if (success) {
-    uiStore.showSuccess('Apartment archived!')
+    uiStore.showSuccess(t('common.apartmentArchived'))
     await apartmentStore.fetchMyApartments()
   } else {
-    uiStore.showError('Failed to archive apartment')
+    uiStore.showError(t('common.failedArchiveApartment'))
   }
   hideActions()
 }
@@ -324,10 +336,10 @@ const handleDuplicate = async () => {
   if (!selectedApartment.value) return
   const result = await apartmentStore.duplicateApartment(selectedApartment.value.id)
   if (result) {
-    uiStore.showSuccess('Apartment duplicated as draft!')
+    uiStore.showSuccess(t('common.apartmentDuplicated'))
     await apartmentStore.fetchMyApartments()
   } else {
-    uiStore.showError('Failed to duplicate apartment')
+    uiStore.showError(t('common.failedDuplicateApartment'))
   }
   hideActions()
 }

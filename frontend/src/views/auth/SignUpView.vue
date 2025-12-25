@@ -11,8 +11,8 @@
 
     <div class="relative w-full max-w-sm sm:max-w-md lg:max-w-lg z-10 my-8 sm:my-16 lg:my-20">
       <BaseCard
-        title="Create Account"
-        subtitle="Join ROOF - Rental Housing in Egypt"
+        :title="$t('auth.signup.createAccount')"
+        :subtitle="$t('auth.signup.joinRoof')"
         :success-msg="successMsg"
         :error-msg="errorMsg"
       >
@@ -22,8 +22,8 @@
               v-model="formData.first_name"
               id="first_name"
               type="text"
-              label="First Name"
-              placeholder="Heba Allah"
+              :label="$t('auth.signup.firstName')"
+              :placeholder="$t('auth.signup.firstName')"
               required
               :minlength="2"
               :maxlength="50"
@@ -33,8 +33,8 @@
               v-model="formData.last_name"
               id="last_name"
               type="text"
-              label="Last Name"
-              placeholder="Hashim"
+              :label="$t('auth.signup.lastName')"
+              :placeholder="$t('auth.signup.lastName')"
               required
               :minlength="2"
               :maxlength="50"
@@ -46,7 +46,7 @@
               v-model="formData.email"
               id="email"
               type="email"
-              label="Email"
+              :label="$t('auth.signup.email')"
               placeholder="you@example.com"
               required
             />
@@ -54,7 +54,7 @@
             <BasePasswordInput
               v-model="formData.password"
               id="password"
-              label="Password"
+              :label="$t('auth.signup.password')"
               placeholder="••••••••"
               required
               :minlength="8"
@@ -67,8 +67,8 @@
               v-model="formData.location"
               id="location"
               type="text"
-              label="Location"
-              placeholder="Cairo, Egypt"
+              :label="$t('auth.signup.location')"
+              :placeholder="$t('auth.signup.location')"
               required
               :minlength="2"
               :maxlength="100"
@@ -77,12 +77,12 @@
             <BaseSelectInput
               v-model="formData.role"
               id="role"
-              label="I want to"
-              placeholder="Select role"
+              :label="$t('auth.signup.iWantTo')"
+              :placeholder="$t('auth.signup.selectRole')"
               required
             >
-              <option value="seeker" class="bg-gray-800">Find an apartment (Seeker)</option>
-              <option value="renter" class="bg-gray-800">List my apartment (Renter)</option>
+              <option value="seeker" class="bg-gray-800">{{ $t('auth.signup.findApartment') }}</option>
+              <option value="renter" class="bg-gray-800">{{ $t('auth.signup.listApartment') }}</option>
             </BaseSelectInput>
           </div>
 
@@ -90,49 +90,49 @@
             <BaseSelectInput
               v-model="formData.flatmate_pref"
               id="flatmate_pref"
-              label="Flatmate Preferences"
-              placeholder="Select preferences"
+              :label="$t('auth.signup.flatmatePreferences')"
+              :placeholder="$t('auth.signup.selectPreferences')"
               :multiple="true"
             >
-              <option value="non-smoker" class="bg-gray-800">Non-smoker</option>
-              <option value="student" class="bg-gray-800">Student</option>
-              <option value="pet-friendly" class="bg-gray-800">Pet Friendly</option>
-              <option value="quiet" class="bg-gray-800">Quiet</option>
-              <option value="party-friendly" class="bg-gray-800">Party Friendly</option>
+              <option value="non-smoker" class="bg-gray-800">{{ $t('auth.signup.nonSmoker') }}</option>
+              <option value="student" class="bg-gray-800">{{ $t('auth.signup.student') }}</option>
+              <option value="pet-friendly" class="bg-gray-800">{{ $t('auth.signup.petFriendly') }}</option>
+              <option value="quiet" class="bg-gray-800">{{ $t('auth.signup.quiet') }}</option>
+              <option value="party-friendly" class="bg-gray-800">{{ $t('auth.signup.partyFriendly') }}</option>
             </BaseSelectInput>
 
             <BaseSelectInput
               v-model="formData.keywords"
               id="keywords"
-              label="Keywords"
-              placeholder="Select keywords"
+              :label="$t('auth.signup.keywords')"
+              :placeholder="$t('auth.signup.selectKeywords')"
               :multiple="true"
             >
-              <option value="gym" class="bg-gray-800">Gym</option>
-              <option value="cooking" class="bg-gray-800">Cooking</option>
-              <option value="music" class="bg-gray-800">Music</option>
-              <option value="travel" class="bg-gray-800">Travel</option>
-              <option value="clean" class="bg-gray-800">Clean</option>
+              <option value="gym" class="bg-gray-800">{{ $t('auth.signup.gym') }}</option>
+              <option value="cooking" class="bg-gray-800">{{ $t('auth.signup.cooking') }}</option>
+              <option value="music" class="bg-gray-800">{{ $t('auth.signup.music') }}</option>
+              <option value="travel" class="bg-gray-800">{{ $t('auth.signup.travel') }}</option>
+              <option value="clean" class="bg-gray-800">{{ $t('auth.signup.clean') }}</option>
             </BaseSelectInput>
           </div>
 
           <!-- Role explanation -->
           <div class="p-3 rounded-xl bg-gray-800 bg-opacity-50 border border-gray-700">
             <p v-if="formData.role === 'seeker'" class="text-sm text-gray-300">
-              <span class="font-medium text-white">Seeker:</span> Browse and search for apartments. Contact renters to inquire about listings.
+              <span class="font-medium text-white">{{ $t('auth.signup.seeker') }}:</span> {{ $t('auth.signup.seekerDescription') }}
             </p>
             <p v-else-if="formData.role === 'renter'" class="text-sm text-gray-300">
-              <span class="font-medium text-white">Renter:</span> List your apartments for rent. Manage your listings and communicate with potential tenants.
+              <span class="font-medium text-white">{{ $t('auth.signup.renter') }}:</span> {{ $t('auth.signup.renterDescription') }}
             </p>
             <p v-else class="text-sm text-gray-400">
-              Select a role to see what you can do.
+              {{ $t('auth.signup.selectRoleToSee') }}
             </p>
           </div>
 
           <BaseButton
             button-type="submit"
             :loading="loading"
-            :label="loading ? 'Creating Account...' : 'Sign Up'"
+            :label="loading ? $t('auth.signup.creatingAccount') : $t('auth.signup.signUpButton')"
             variant="primary"
             size="md"
             block
@@ -142,9 +142,9 @@
         <template #footer>
           <div class="mt-4 sm:mt-6 text-center">
             <p class="text-gray-300 text-xs sm:text-sm">
-              Already have an account?
+              {{ $t('auth.signup.hasAccount') }}
               <router-link to="/login" class="font-semibold hover:text-white transition-colors" style="color: #4BC974;">
-                Sign In
+                {{ $t('auth.signup.signIn') }}
               </router-link>
             </p>
           </div>
@@ -157,6 +157,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import BaseButton from '@/components/buttons/BaseButton.vue'
@@ -164,6 +165,8 @@ import BaseInput from '@/components/inputs/BaseInput.vue'
 import BasePasswordInput from '@/components/inputs/BasePasswordInput.vue'
 import BaseSelectInput from '@/components/inputs/BaseSelectInput.vue'
 import BaseCard from '@/components/cards/BaseCard.vue'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -193,8 +196,8 @@ const handleSignup = async () => {
     const success = await authStore.register(formData)
 
     if (success) {
-      successMsg.value = 'Account created successfully! Redirecting...'
-      uiStore.showSuccess('Welcome to ROOF!')
+      successMsg.value = t('auth.signup.accountCreated')
+      uiStore.showSuccess(t('auth.signup.welcomeToRoof'))
 
       // Redirect based on role
       setTimeout(() => {
@@ -205,7 +208,7 @@ const handleSignup = async () => {
         }
       }, 500)
     } else {
-      errorMsg.value = authStore.error || 'Registration failed. Please try again.'
+      errorMsg.value = authStore.error || t('auth.signup.registrationFailed')
     }
   } catch (error: any) {
     if (error.response?.data?.detail) {
@@ -217,7 +220,7 @@ const handleSignup = async () => {
         errorMsg.value = error.response.data.detail
       }
     } else {
-      errorMsg.value = 'Something went wrong. Please try again.'
+      errorMsg.value = t('auth.signup.somethingWentWrong')
     }
   } finally {
     loading.value = false

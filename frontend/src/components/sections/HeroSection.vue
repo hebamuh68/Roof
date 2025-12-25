@@ -15,19 +15,22 @@
     <!-- Content -->
     <div class="absolute top-32 left-20 sm:left-24 lg:left-32 z-30 text-white max-w-2xl font-poppins">
       <h1 class="text-left text-4xl md:text-6xl lg:text-8xl font-bold mb-4 leading-tight drop-shadow-lg">
-        Welcome To <br> ROOF
+        {{ $t('hero.welcome') }} <br> {{ $t('hero.roof') }}
       </h1>
       <p class="text-lg md:text-base lg:text-xl mb-8 text-left px-4 py-2 relative overflow-hidden text-gray-200 drop-shadow">
-        <span class="relative z-10">Rental Housing App In Egypt</span>
+        <span class="relative z-10">{{ $t('hero.subtitle') }}</span>
       </p>
       <router-link to="/signup">
-        <BaseButton label="Get Started" variant="primary" size="md" />
+        <BaseButton :label="$t('hero.getStarted')" variant="primary" size="md" />
       </router-link>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
 import heroBkg from '@/assets/images/heroBkg.png'
 import BaseButton from '../buttons/BaseButton.vue'
+
+const { t } = useI18n()
 </script>

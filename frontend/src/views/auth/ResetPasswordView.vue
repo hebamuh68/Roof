@@ -11,8 +11,8 @@
 
     <div class="relative w-full max-w-sm sm:max-w-md lg:max-w-lg z-10 my-8 sm:my-16 lg:my-20">
       <BaseCard
-        title="Reset Password"
-        subtitle="Enter your new password"
+        :title="$t('auth.resetPassword.title')"
+        :subtitle="$t('auth.resetPassword.subtitle')"
         :success-msg="successMsg"
         :error-msg="errorMsg"
       >
@@ -20,7 +20,7 @@
           <BasePasswordInput
             v-model="password"
             id="password"
-            label="New Password"
+            :label="$t('common.newPassword')"
             placeholder="••••••••"
             required
             :minlength="8"
@@ -29,7 +29,7 @@
           <BasePasswordInput
             v-model="confirmPassword"
             id="confirmPassword"
-            label="Confirm Password"
+            :label="$t('auth.resetPassword.confirmPassword')"
             placeholder="••••••••"
             required
             :minlength="8"
@@ -39,7 +39,7 @@
             button-type="submit"
             :loading="loading"
             :disabled="!isValid"
-            :label="loading ? 'Resetting...' : 'Reset Password'"
+            :label="loading ? $t('auth.resetPassword.resetting') : $t('auth.resetPassword.resetButton')"
             variant="primary"
             size="md"
             block
@@ -50,16 +50,16 @@
           <svg class="w-16 h-16 mx-auto mb-4" style="color: #4BC974;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <p class="text-gray-300 mb-4">Your password has been reset successfully!</p>
+          <p class="text-gray-300 mb-4">{{ $t('common.passwordResetSuccess') }}</p>
           <router-link to="/login">
-            <BaseButton label="Go to Login" variant="primary" size="md" />
+            <BaseButton :label="$t('auth.resetPassword.goToLogin')" variant="primary" size="md" />
           </router-link>
         </div>
 
         <template #footer>
           <div v-if="!success" class="mt-4 sm:mt-6 text-center">
             <router-link to="/login" class="text-gray-300 text-xs sm:text-sm hover:text-white transition-colors" style="color: #4BC974;">
-              Back to Login
+              {{ $t('auth.resetPassword.backToLogin') }}
             </router-link>
           </div>
         </template>
@@ -71,10 +71,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import BaseButton from '@/components/buttons/BaseButton.vue'
 import BasePasswordInput from '@/components/inputs/BasePasswordInput.vue'
 import BaseCard from '@/components/cards/BaseCard.vue'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -92,7 +95,7 @@ const isValid = computed(() => {
 
 const handleSubmit = async () => {
   if (password.value !== confirmPassword.value) {
-    errorMsg.value = 'Passwords do not match'
+    errorMsg.value = t('common.passwordsDoNotMatch')
     return
   }
 
@@ -102,7 +105,7 @@ const handleSubmit = async () => {
 
   const token = route.query.token as string
   if (!token) {
-    errorMsg.value = 'Invalid or missing reset token'
+    errorMsg.value = t('common.invalidResetToken')
     loading.value = false
     return
   }
@@ -111,9 +114,9 @@ const handleSubmit = async () => {
 
   if (result) {
     success.value = true
-    successMsg.value = 'Password reset successful!'
+    successMsg.value = t('common.passwordResetSuccessful')
   } else {
-    errorMsg.value = authStore.error || 'Failed to reset password. The link may have expired.'
+    errorMsg.value = authStore.error || t('common.failedResetPassword')
   }
 
   loading.value = false

@@ -37,6 +37,9 @@
 
         <!-- Right section -->
         <div class="flex items-center space-x-4">
+          <!-- Language Switcher -->
+          <LanguageSwitcher />
+
           <!-- Search - Hidden on mobile -->
           <SearchInput
             v-model="searchQuery"
@@ -132,7 +135,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                     </svg>
-                    My Profile
+                    {{ $t('nav.profile') }}
                   </router-link>
 
                   <router-link
@@ -143,7 +146,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                     </svg>
-                    My Apartments
+                    {{ $t('nav.myApartments') }}
                   </router-link>
 
                   <router-link
@@ -156,7 +159,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
-                    Admin Dashboard
+                    {{ $t('nav.adminDashboard') }}
                   </router-link>
 
                   <div class="border-t border-gray-100 mt-2 pt-2">
@@ -167,7 +170,7 @@
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                       </svg>
-                      Sign out
+                      {{ $t('nav.signOut') }}
                     </button>
                   </div>
                 </div>
@@ -183,14 +186,14 @@
                 'p-2 rounded-full',
                 isHomePage ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-700'
               ]">
-                Login
+                {{ $t('nav.login') }}
               </router-link>
               <!-- Signup -->
               <router-link to="/signup" :class="[
                 'p-2 rounded-full',
                 isHomePage ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-700'
               ]">
-                Signup
+                {{ $t('nav.signup') }}
               </router-link>
             </div>
           </template>
@@ -243,7 +246,7 @@
         <!-- Mobile menu header -->
         <div class="flex items-center justify-between mb-8">
           <h2 class="text-2xl font-bold text-white drop-shadow-lg">
-            Menu
+            {{ $t('nav.menu') }}
           </h2>
           <button
             @click="closeMobileMenu"
@@ -269,6 +272,11 @@
               <p class="text-white/60 text-sm">{{ user?.email }}</p>
             </div>
           </div>
+        </div>
+
+        <!-- Language Switcher (Mobile) -->
+        <div class="mb-4">
+          <LanguageSwitcher />
         </div>
 
         <!-- Mobile search -->
@@ -305,7 +313,7 @@
               @click="closeMobileMenu"
               class="flex items-center justify-between py-3 px-4 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 border border-transparent"
             >
-              <span>Notifications</span>
+              <span>{{ $t('nav.notifications') }}</span>
               <span
                 v-if="unreadNotifications > 0"
                 class="px-2 py-0.5 text-xs font-bold text-white rounded-full"
@@ -320,7 +328,7 @@
               @click="closeMobileMenu"
               class="flex items-center justify-between py-3 px-4 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 border border-transparent"
             >
-              <span>Messages</span>
+              <span>{{ $t('nav.messages') }}</span>
               <span
                 v-if="unreadMessages > 0"
                 class="px-2 py-0.5 text-xs font-bold text-white rounded-full"
@@ -335,7 +343,7 @@
               @click="closeMobileMenu"
               class="block py-3 px-4 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 border border-transparent"
             >
-              My Profile
+              {{ $t('nav.profile') }}
             </router-link>
 
             <router-link
@@ -343,7 +351,7 @@
               @click="closeMobileMenu"
               class="block py-3 px-4 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 border border-transparent"
             >
-              My Apartments
+              {{ $t('nav.myApartments') }}
             </router-link>
 
             <router-link
@@ -352,7 +360,7 @@
               @click="closeMobileMenu"
               class="block py-3 px-4 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 border border-transparent"
             >
-              Admin Dashboard
+              {{ $t('nav.adminDashboard') }}
             </router-link>
           </template>
         </div>
@@ -364,7 +372,7 @@
               @click="handleMobileLogout"
               class="w-full py-3 px-4 rounded-xl text-sm font-medium text-center transition-all duration-300 text-red-400 border border-red-400/30 hover:bg-red-500/10"
             >
-              Sign out
+              {{ $t('nav.signOut') }}
             </button>
           </template>
           <template v-else>
@@ -373,7 +381,7 @@
               @click="closeMobileMenu"
               class="block py-3 px-4 rounded-xl text-sm font-medium text-center transition-all duration-300 text-white border border-white/30 hover:bg-white/10"
             >
-              Login
+              {{ $t('nav.login') }}
             </router-link>
             <router-link
               to="/signup"
@@ -381,7 +389,7 @@
               class="block py-3 px-4 rounded-xl text-sm font-medium text-center transition-all duration-300 text-white shadow-lg hover:shadow-2xl hover:-translate-y-1 transform"
               style="background: linear-gradient(90deg, #4BC974 0%, #00A060 100%);"
             >
-              Signup
+              {{ $t('nav.signup') }}
             </router-link>
           </template>
         </div>
@@ -393,17 +401,20 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
 import { useMessageStore } from '@/stores/message'
 import SearchInput from '../inputs/SearchInput.vue'
 import HamburgerIcon from '../icons/menu/HamburgerIcon.vue'
+import LanguageSwitcher from './LanguageSwitcher.vue'
 import logoImage from '../icons/logo.svg'
 
 
 // ============================== Stores ==============================
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 const messageStore = useMessageStore()
@@ -414,12 +425,12 @@ const isMobileMenuOpen = ref(false)
 const isUserMenuOpen = ref(false)
 
 // ============================== Computed ==============================
-const navLinks = ref([
-  { name: 'Home', route: '/' },
-  { name: 'Apartments', route: '/apartments' },
-  { name: 'Put an Ad', route: '/put-an-ad' },
-  { name: 'About', route: '/about' },
-  { name: 'Contact Us', route: '/contact' },
+const navLinks = computed(() => [
+  { name: t('nav.home'), route: '/' },
+  { name: t('nav.apartments'), route: '/apartments' },
+  { name: t('nav.putAnAd'), route: '/put-an-ad' },
+  { name: t('nav.about'), route: '/about' },
+  { name: t('nav.contact'), route: '/contact' },
 ])
 
 const isHomePage = computed(() => route.name === 'home')

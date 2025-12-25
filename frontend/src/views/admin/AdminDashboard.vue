@@ -8,8 +8,8 @@
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">Admin Dashboard</h1>
-        <p class="text-gray-400">Platform overview and management</p>
+        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">{{ $t('admin.dashboard.title') }}</h1>
+        <p class="text-gray-400">{{ $t('common.platformOverview') }}</p>
       </div>
 
       <!-- Stats Grid -->
@@ -71,7 +71,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <!-- Users by Role -->
         <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-10">
-          <h3 class="text-lg font-semibold text-white mb-4">Users by Role</h3>
+          <h3 class="text-lg font-semibold text-white mb-4">{{ $t('common.usersByRole') }}</h3>
           <div class="space-y-4">
             <div v-for="(count, role) in stats.users_by_role" :key="role">
               <div class="flex items-center justify-between mb-1">
@@ -93,7 +93,7 @@
 
         <!-- Apartments by Status -->
         <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-10">
-          <h3 class="text-lg font-semibold text-white mb-4">Apartments by Status</h3>
+          <h3 class="text-lg font-semibold text-white mb-4">{{ $t('common.apartmentsByStatus') }}</h3>
           <div class="space-y-4">
             <div v-for="(count, status) in stats.apartments_by_status" :key="status">
               <div class="flex items-center justify-between mb-1">
@@ -143,8 +143,8 @@
               </svg>
             </div>
             <div>
-              <div class="font-medium text-white">View Apartments</div>
-              <div class="text-sm text-gray-400">Browse all listings</div>
+              <div class="font-medium text-white">{{ $t('admin.apartments.viewApartments') }}</div>
+              <div class="text-sm text-gray-400">{{ $t('common.browseAllListings') }}</div>
             </div>
           </router-link>
 
@@ -158,8 +158,8 @@
               </svg>
             </div>
             <div>
-              <div class="font-medium text-white">Refresh Stats</div>
-              <div class="text-sm text-gray-400">Update dashboard data</div>
+              <div class="font-medium text-white">{{ $t('admin.dashboard.refreshStats') }}</div>
+              <div class="text-sm text-gray-400">{{ $t('common.updateDashboard') }}</div>
             </div>
           </button>
         </div>
@@ -170,7 +170,10 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/services/api'
+
+const { t } = useI18n()
 
 const stats = reactive({
   total_users: 0,

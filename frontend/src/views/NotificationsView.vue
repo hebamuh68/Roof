@@ -9,10 +9,10 @@
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">Notifications</h1>
+          <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">{{ $t('notifications.title') }}</h1>
           <p class="text-gray-400">
-            <span v-if="unreadCount > 0">{{ unreadCount }} unread</span>
-            <span v-else>All caught up!</span>
+            <span v-if="unreadCount > 0">{{ unreadCount }} {{ $t('common.unread') }}</span>
+            <span v-else>{{ $t('common.allCaughtUp') }}</span>
           </p>
         </div>
 
@@ -22,14 +22,14 @@
             @click="markAllRead"
             class="px-4 py-2 bg-white bg-opacity-10 text-white rounded-xl font-medium hover:bg-opacity-20 transition-colors"
           >
-            Mark all as read
+            {{ $t('common.markAllAsRead') }}
           </button>
           <button
             v-if="notifications.length > 0"
             @click="showClearModal = true"
             class="px-4 py-2 bg-white bg-opacity-10 text-gray-300 rounded-xl font-medium hover:bg-opacity-20 transition-colors"
           >
-            Clear all
+            {{ $t('common.clearAll') }}
           </button>
         </div>
       </div>
@@ -129,26 +129,26 @@
           class="bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4 border border-gray-700"
           @click.stop
         >
-          <h3 class="text-xl font-semibold text-white mb-2">Clear Notifications</h3>
-          <p class="text-gray-400 mb-6">What would you like to clear?</p>
+          <h3 class="text-xl font-semibold text-white mb-2">{{ $t('notifications.clearNotifications') }}</h3>
+          <p class="text-gray-400 mb-6">{{ $t('common.whatToClear') }}</p>
           <div class="space-y-3">
             <button
               @click="clearAll(true)"
               class="w-full px-4 py-3 bg-gray-700 text-white rounded-xl font-medium hover:bg-gray-600 transition-colors text-left"
             >
-              Clear read notifications only
+              {{ $t('notifications.clearReadOnly') }}
             </button>
             <button
               @click="clearAll(false)"
               class="w-full px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors text-left"
             >
-              Clear all notifications
+              {{ $t('notifications.clearAll') }}
             </button>
             <button
               @click="showClearModal = false"
               class="w-full px-4 py-3 border border-gray-600 text-gray-300 rounded-xl font-medium hover:bg-gray-700 transition-colors"
             >
-              Cancel
+              {{ $t('common.cancel') }}
             </button>
           </div>
         </div>
@@ -160,9 +160,12 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useNotificationStore } from '@/stores/notification'
 import { useUIStore } from '@/stores/ui'
 import type { Notification } from '@/types'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const notificationStore = useNotificationStore()
@@ -216,7 +219,7 @@ const handleNotificationClick = async (notification: Notification) => {
 
 const markAllRead = async () => {
   await notificationStore.markAllAsRead()
-  uiStore.showSuccess('All notifications marked as read')
+  uiStore.showSuccess(t('common.allNotificationsRead'))
 }
 
 const deleteNotification = async (id: number) => {
@@ -226,7 +229,7 @@ const deleteNotification = async (id: number) => {
 const clearAll = async (readOnly: boolean) => {
   await notificationStore.deleteAllNotifications(readOnly)
   showClearModal.value = false
-  uiStore.showSuccess(readOnly ? 'Read notifications cleared' : 'All notifications cleared')
+  uiStore.showSuccess(readOnly ? t('common.readNotificationsCleared') : t('common.notificationsCleared'))
 }
 
 onMounted(() => {

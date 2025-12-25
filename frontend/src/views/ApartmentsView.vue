@@ -12,8 +12,8 @@
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">Browse Apartments</h1>
-        <p class="text-gray-400">Find your perfect place to call home</p>
+        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">{{ $t('apartments.browse') }}</h1>
+        <p class="text-gray-400">{{ $t('apartments.subtitle') }}</p>
       </div>
 
       <!-- Search and Filters Bar -->
@@ -24,7 +24,7 @@
             v-model="searchQuery"
             @keyup.enter="handleSearch"
             type="text"
-            placeholder="Search by location, title, or keywords..."
+            :placeholder="$t('apartments.searchPlaceholder')"
             class="w-full px-4 py-3 pl-12 bg-white bg-opacity-10 backdrop-blur-sm border border-white border-opacity-20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent transition-all"
           />
           <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,11 +55,11 @@
           @change="handleSort"
           class="px-4 py-3 bg-white bg-opacity-10 backdrop-blur-sm border border-white border-opacity-20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-secondary-500 cursor-pointer"
         >
-          <option value="relevance" class="bg-gray-800">Relevance</option>
-          <option value="price_asc" class="bg-gray-800">Price: Low to High</option>
-          <option value="price_desc" class="bg-gray-800">Price: High to Low</option>
-          <option value="date_desc" class="bg-gray-800">Newest First</option>
-          <option value="views_desc" class="bg-gray-800">Most Popular</option>
+          <option value="relevance" class="bg-gray-800">{{ $t('apartments.sort.relevance') }}</option>
+          <option value="price_asc" class="bg-gray-800">{{ $t('apartments.sort.priceAsc') }}</option>
+          <option value="price_desc" class="bg-gray-800">{{ $t('apartments.sort.priceDesc') }}</option>
+          <option value="date_desc" class="bg-gray-800">{{ $t('apartments.sort.dateDesc') }}</option>
+          <option value="views_desc" class="bg-gray-800">{{ $t('apartments.sort.viewsDesc') }}</option>
         </select>
       </div>
 
@@ -81,15 +81,15 @@
           @click="clearAllFilters"
           class="text-sm text-gray-400 hover:text-white transition-colors"
         >
-          Clear all
+          {{ $t('apartments.filters.clearAll') }}
         </button>
       </div>
 
       <!-- Results Count -->
       <div class="flex items-center justify-between mb-6">
         <p class="text-gray-400">
-          <span v-if="loading">Loading...</span>
-          <span v-else>{{ totalResults }} apartments found</span>
+          <span v-if="loading">{{ $t('apartments.loading') }}</span>
+          <span v-else>{{ totalResults }} {{ $t('apartments.found') }}</span>
         </p>
       </div>
 
@@ -97,7 +97,7 @@
       <ApartmentGrid
         :apartments="apartments"
         :loading="loading"
-        empty-message="No apartments match your criteria. Try adjusting your filters."
+        :empty-message="$t('apartments.noResults')"
         @select="viewApartment"
       />
 
@@ -148,6 +148,9 @@
 
 <script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 import { useRouter, useRoute } from 'vue-router'
 import { useApartmentStore } from '@/stores/apartment'
 import type { Apartment, ApartmentFilters } from '@/types'
@@ -169,24 +172,26 @@ const loading = computed(() => apartmentStore.loading)
 const totalResults = computed(() => apartmentStore.pagination.total)
 const totalPages = computed(() => apartmentStore.pagination.pages)
 
+const { t } = useI18n()
+
 const activeFilterTags = computed(() => {
   const tags: { key: string; label: string }[] = []
   const f = filters.value
 
-  if (f.location) tags.push({ key: 'location', label: `Location: ${f.location}` })
+  if (f.location) tags.push({ key: 'location', label: `${t('putAnAd.location')}: ${f.location}` })
   if (f.apartment_type) tags.push({ key: 'apartment_type', label: f.apartment_type.toUpperCase() })
   if (f.min_price || f.max_price) {
     const priceLabel = f.min_price && f.max_price
       ? `${f.min_price.toLocaleString()} - ${f.max_price.toLocaleString()} EGP`
       : f.min_price
-        ? `From ${f.min_price.toLocaleString()} EGP`
-        : `Up to ${f.max_price?.toLocaleString()} EGP`
+        ? `${t('common.from')} ${f.min_price.toLocaleString()} EGP`
+        : `${t('common.upTo')} ${f.max_price?.toLocaleString()} EGP`
     tags.push({ key: 'price', label: priceLabel })
   }
   if (f.furnishing_type) tags.push({ key: 'furnishing_type', label: f.furnishing_type })
-  if (f.parking_type) tags.push({ key: 'parking_type', label: `Parking: ${f.parking_type}` })
+  if (f.parking_type) tags.push({ key: 'parking_type', label: `${t('common.parking')}: ${f.parking_type}` })
   if (f.is_bathroom_solo !== undefined) {
-    tags.push({ key: 'is_bathroom_solo', label: f.is_bathroom_solo ? 'Private Bathroom' : 'Shared Bathroom' })
+    tags.push({ key: 'is_bathroom_solo', label: f.is_bathroom_solo ? t('common.privateBathroom') : t('common.sharedBathroom') })
   }
 
   return tags

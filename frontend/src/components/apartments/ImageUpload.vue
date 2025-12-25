@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   modelValue: File[]
@@ -105,13 +108,13 @@ const getExistingImageUrl = (img: string) => {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
         </svg>
         <div class="text-gray-300">
-          <span class="font-medium text-secondary-400">Click to upload</span> or drag and drop
+          <span class="font-medium text-secondary-400">{{ $t('common.clickToUpload') }}</span> {{ $t('common.dragAndDrop') }}
         </div>
         <p class="text-sm text-gray-500">
-          JPEG, PNG or WebP (max 10MB each)
+          {{ $t('putAnAd.imageFormats') }}
         </p>
         <p class="text-xs text-gray-500">
-          Minimum {{ minFiles }} images required. {{ totalImages }}/{{ maxFiles }} uploaded.
+          {{ $t('putAnAd.minImagesRequired', { min: minFiles }) }} {{ totalImages }}/{{ maxFiles }} {{ $t('common.uploaded') }}.
         </p>
       </div>
     </div>
@@ -140,7 +143,7 @@ const getExistingImageUrl = (img: string) => {
           </button>
         </div>
         <div class="absolute top-2 left-2 px-2 py-0.5 bg-black bg-opacity-50 rounded text-xs text-white">
-          Saved
+          {{ $t('common.save') }}
         </div>
       </div>
 
@@ -166,7 +169,7 @@ const getExistingImageUrl = (img: string) => {
           </button>
         </div>
         <div class="absolute top-2 left-2 px-2 py-0.5 bg-secondary-500 bg-opacity-80 rounded text-xs text-white">
-          New
+          {{ $t('common.new') }}
         </div>
       </div>
     </div>

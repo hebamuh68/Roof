@@ -1,6 +1,23 @@
 <script setup>
+import { onMounted, watch } from 'vue'
+import { useLanguageStore } from './stores/language'
 import Navbar from './components/common/Navbar.vue'
 import ToastContainer from './components/common/ToastContainer.vue'
+
+const languageStore = useLanguageStore()
+
+// Ensure direction is set on mount and when language changes
+onMounted(() => {
+  const currentLang = languageStore.getCurrentLanguage()
+  document.documentElement.dir = currentLang.dir
+  document.documentElement.lang = currentLang.code
+})
+
+watch(() => languageStore.currentLanguage, (newLang) => {
+  const lang = languageStore.getCurrentLanguage()
+  document.documentElement.dir = lang.dir
+  document.documentElement.lang = lang.code
+})
 </script>
 
 <template>
