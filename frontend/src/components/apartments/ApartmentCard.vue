@@ -14,6 +14,11 @@ const imageUrl = computed(() => {
   if (props.apartment.images && props.apartment.images.length > 0) {
     const img = props.apartment.images[0]
     if (img.startsWith('http')) return img
+    // If URL already has /static/images/ prefix, just prepend base URL
+    if (img.startsWith('/static/images/')) {
+      return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${img}`
+    }
+    // Otherwise, add the prefix
     return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/static/images/${img}`
   }
   return 'https://via.placeholder.com/400x300?text=No+Image'
