@@ -172,7 +172,6 @@ const loading = computed(() => apartmentStore.loading)
 const totalResults = computed(() => apartmentStore.pagination.total)
 const totalPages = computed(() => apartmentStore.pagination.pages)
 
-const { t } = useI18n()
 
 const activeFilterTags = computed(() => {
   const tags: { key: string; label: string }[] = []
