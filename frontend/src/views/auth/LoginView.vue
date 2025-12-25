@@ -8,7 +8,7 @@
     <!-- Green accent orbs -->
     <div class="absolute -top-20 -left-20 w-48 h-48 sm:w-72 sm:h-72 rounded-full blur-3xl opacity-20" style="background: linear-gradient(90deg, #4BC974 0%, #00A060 100%);"></div>
     <div class="absolute -bottom-20 -right-20 w-48 h-48 sm:w-72 sm:h-72 rounded-full blur-3xl opacity-20" style="background: linear-gradient(90deg, #00A060 0%, #4BC974 100%);"></div>
-    
+
     <div class="relative w-full max-w-sm sm:max-w-md lg:max-w-lg z-10 my-8 sm:my-16 lg:my-20">
       <BaseCard
         title="Login"
@@ -36,6 +36,16 @@
             :maxlength="100"
           />
 
+          <div class="flex items-center justify-between">
+            <label class="flex items-center">
+              <input type="checkbox" v-model="rememberMe" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-green-500 focus:ring-green-500" />
+              <span class="ml-2 text-sm text-gray-300">Remember me</span>
+            </label>
+            <router-link to="/forgot-password" class="text-sm hover:text-white transition-colors" style="color: #4BC974;">
+              Forgot password?
+            </router-link>
+          </div>
+
           <BaseButton
             button-type="submit"
             :loading="loading"
@@ -62,55 +72,69 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from "vue";
-import { loginUser } from "../../services/authService";
-import { userLogin, createEmptyUserLogin } from "../../types/userType";
-import BaseButton from "../../components/buttons/BaseButton.vue";
-import BaseInput from "../../components/inputs/BaseInput.vue";
-import BasePasswordInput from "../../components/inputs/BasePasswordInput.vue";
-import BaseCard from "../../components/cards/BaseCard.vue";
+import { reactive, ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { useUIStore } from '@/stores/ui'
+import BaseButton from '@/components/buttons/BaseButton.vue'
+import BaseInput from '@/components/inputs/BaseInput.vue'
+import BasePasswordInput from '@/components/inputs/BasePasswordInput.vue'
+import BaseCard from '@/components/cards/BaseCard.vue'
 
-//================================ Reactive variables ===============================
-const formData = reactive<userLogin>(createEmptyUserLogin());
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
+const uiStore = useUIStore()
 
-//================================ Methods ===============================
-const loading = ref(false);
-const successMsg = ref("");
-const errorMsg = ref("");
+const formData = reactive({
+  email: '',
+  password: ''
+})
 
-// Submit handler
+const loading = ref(false)
+const successMsg = ref('')
+const errorMsg = ref('')
+const rememberMe = ref(false)
+
 const handleLogin = async () => {
-  loading.value = true;
-  successMsg.value = "";
-  errorMsg.value = "";
+  loading.value = true
+  successMsg.value = ''
+  errorMsg.value = ''
 
   try {
-    const data = await loginUser(formData);
-    successMsg.value = data.message || "User logged in successfully!";
-    Object.assign(formData, createEmptyUserLogin());
+    const success = await authStore.login(formData)
+
+    if (success) {
+      successMsg.value = 'Login successful! Redirecting...'
+      uiStore.showSuccess('Welcome back!')
+
+      // Redirect to the intended page or home
+      const redirectPath = route.query.redirect as string || '/'
+      setTimeout(() => {
+        router.push(redirectPath)
+      }, 500)
+    } else {
+      errorMsg.value = authStore.error || 'Login failed. Please check your credentials.'
+    }
   } catch (error: any) {
-    // Handle backend validation errors
     if (error.response?.data?.detail) {
-      // If detail is an array (Pydantic validation errors)
       if (Array.isArray(error.response.data.detail)) {
         errorMsg.value = error.response.data.detail
           .map((err: any) => err.msg)
-          .join('. ');
+          .join('. ')
       } else {
-        // If detail is a string
-        errorMsg.value = error.response.data.detail;
+        errorMsg.value = error.response.data.detail
       }
     } else {
-      errorMsg.value = "Something went wrong. Please try again.";
+      errorMsg.value = 'Something went wrong. Please try again.'
     }
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 </script>
 
 <style scoped>
-/* Add custom focus styles */
 .focus\:border-green-500:focus {
   border-color: #4BC974;
 }
