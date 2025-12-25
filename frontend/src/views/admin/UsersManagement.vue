@@ -15,9 +15,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
               </svg>
             </router-link>
-            <h1 class="text-3xl sm:text-4xl font-bold text-white">User Management</h1>
+            <h1 class="text-3xl sm:text-4xl font-bold text-white">{{ $t('admin.users.title') }}</h1>
           </div>
-          <p class="text-gray-400">Manage all platform users</p>
+          <p class="text-gray-400">{{ $t('common.manageAllUsers') }}</p>
         </div>
 
         <!-- Search -->
@@ -25,7 +25,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search users..."
+            :placeholder="$t('admin.users.searchUsers')"
             class="w-full sm:w-64 px-4 py-2 pl-10 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary-500"
           />
           <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,12 +80,12 @@
           <table class="w-full">
             <thead>
               <tr class="border-b border-white border-opacity-10">
-                <th class="px-6 py-4 text-left text-sm font-medium text-gray-400">User</th>
-                <th class="px-6 py-4 text-left text-sm font-medium text-gray-400">Email</th>
-                <th class="px-6 py-4 text-left text-sm font-medium text-gray-400">Role</th>
-                <th class="px-6 py-4 text-left text-sm font-medium text-gray-400">Location</th>
-                <th class="px-6 py-4 text-left text-sm font-medium text-gray-400">Joined</th>
-                <th class="px-6 py-4 text-right text-sm font-medium text-gray-400">Actions</th>
+                <th class="px-6 py-4 text-left text-sm font-medium text-gray-400">{{ $t('common.user') }}</th>
+                <th class="px-6 py-4 text-left text-sm font-medium text-gray-400">{{ $t('common.email') }}</th>
+                <th class="px-6 py-4 text-left text-sm font-medium text-gray-400">{{ $t('common.role') }}</th>
+                <th class="px-6 py-4 text-left text-sm font-medium text-gray-400">{{ $t('putAnAd.location') }}</th>
+                <th class="px-6 py-4 text-left text-sm font-medium text-gray-400">{{ $t('common.joined') }}</th>
+                <th class="px-6 py-4 text-right text-sm font-medium text-gray-400">{{ $t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -122,7 +122,7 @@
                   <button
                     @click="confirmDelete(user)"
                     class="p-2 text-red-400 hover:bg-red-500 hover:bg-opacity-20 rounded-lg transition-colors"
-                    title="Delete user"
+                    :title="$t('messages.deleteUser')"
                   >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -145,24 +145,23 @@
           class="bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4 border border-gray-700"
           @click.stop
         >
-          <h3 class="text-xl font-semibold text-white mb-2">Delete User</h3>
+          <h3 class="text-xl font-semibold text-white mb-2">{{ $t('admin.users.deleteUser') }}</h3>
           <p class="text-gray-400 mb-6">
-            Are you sure you want to delete <strong class="text-white">{{ userToDelete?.first_name }} {{ userToDelete?.last_name }}</strong>?
-            This action cannot be undone.
+            {{ $t('admin.users.deleteConfirmation', { name: `${userToDelete?.first_name} ${userToDelete?.last_name}` }) }}
           </p>
           <div class="flex gap-3">
             <button
               @click="showDeleteModal = false"
               class="flex-1 px-4 py-2 bg-gray-700 text-white rounded-xl font-medium hover:bg-gray-600 transition-colors"
             >
-              Cancel
+              {{ $t('common.cancel') }}
             </button>
             <button
               @click="deleteUser"
               :disabled="deleting"
               class="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
             >
-              {{ deleting ? 'Deleting...' : 'Delete' }}
+              {{ deleting ? $t('common.deleting') : $t('common.delete') }}
             </button>
           </div>
         </div>
@@ -173,9 +172,13 @@
 
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useI18n } from 'vue-i18n'
 import api from '@/services/api'
 import { useUIStore } from '@/stores/ui'
 import type { User } from '@/types'
+
+const { t } = useI18n()
 
 const uiStore = useUIStore()
 
@@ -187,12 +190,12 @@ const showDeleteModal = ref(false)
 const userToDelete = ref<User | null>(null)
 const deleting = ref(false)
 
-const roleFilters = [
-  { value: 'all', label: 'All Users' },
-  { value: 'seeker', label: 'Seekers' },
-  { value: 'renter', label: 'Renters' },
-  { value: 'admin', label: 'Admins' }
-]
+const roleFilters = computed(() => [
+  { value: 'all', label: t('common.allUsers') },
+  { value: 'seeker', label: t('common.seekers') },
+  { value: 'renter', label: t('common.renters') },
+  { value: 'admin', label: t('common.admins') }
+])
 
 const filteredUsers = computed(() => {
   let result = users.value
@@ -245,8 +248,8 @@ const fetchUsers = async () => {
     const response = await api.get('/admin/users')
     users.value = response.data
   } catch (error) {
-    console.error('Failed to fetch users:', error)
-    uiStore.showError('Failed to fetch users')
+    console.error(t('common.failedFetchUsers'), error)
+    uiStore.showError(t('common.failedFetchUsers'))
   } finally {
     loading.value = false
   }
@@ -264,12 +267,12 @@ const deleteUser = async () => {
   try {
     await api.delete(`/admin/users/${userToDelete.value.id}`)
     users.value = users.value.filter((u) => u.id !== userToDelete.value?.id)
-    uiStore.showSuccess('User deleted successfully')
+    uiStore.showSuccess(t('common.userDeleted'))
     showDeleteModal.value = false
     userToDelete.value = null
   } catch (error) {
-    console.error('Failed to delete user:', error)
-    uiStore.showError('Failed to delete user')
+    console.error(t('common.failedDeleteUser'), error)
+    uiStore.showError(t('common.failedDeleteUser'))
   } finally {
     deleting.value = false
   }

@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Option {
   value: string | number
@@ -21,7 +24,7 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: 'Select...'
+    default: ''
   },
   required: {
     type: Boolean,
@@ -97,12 +100,12 @@ const selectedValues = computed(() => {
 const displayText = computed(() => {
   if (props.multiple) {
     const selected = allOptions.value.filter(opt => selectedValues.value.includes(opt.value))
-    if (selected.length === 0) return props.placeholder
+    if (selected.length === 0) return props.placeholder || t('common.select')
     if (selected.length === 1) return selected[0].label
     return `${selected.length} selected`
   } else {
     const selected = allOptions.value.find(opt => opt.value === props.modelValue)
-    return selected ? selected.label : props.placeholder
+    return selected ? selected.label : (props.placeholder || t('common.select'))
   }
 })
 
@@ -310,7 +313,7 @@ const buttonClasses = computed(() => [
             v-if="filteredOptions.length === 0"
             class="px-3 sm:px-4 py-2 sm:py-3 text-sm text-gray-400 text-center"
           >
-            No results found
+            {{ $t('common.noResultsFound') }}
           </div>
         </div>
       </Transition>
@@ -327,7 +330,7 @@ const buttonClasses = computed(() => [
     </select>
 
     <p v-if="multiple" class="text-xs text-gray-400 mt-1">
-      Hold Ctrl/Cmd to select multiple
+      {{ $t('common.holdCtrlToSelect') }}
     </p>
     <p v-if="error && typeof error === 'string'" class="mt-1 text-xs text-red-400">
       {{ error }}

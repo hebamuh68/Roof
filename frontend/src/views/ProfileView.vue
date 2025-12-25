@@ -20,11 +20,11 @@
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <!-- Personal Info Section -->
           <div>
-            <h2 class="text-xl font-semibold text-white mb-4">Personal Information</h2>
+            <h2 class="text-xl font-semibold text-white mb-4">{{ $t('common.personalInformation') }}</h2>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">First Name</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('profile.firstName') }}</label>
                 <input
                   v-model="form.first_name"
                   type="text"
@@ -33,7 +33,7 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Last Name</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('profile.lastName') }}</label>
                 <input
                   v-model="form.last_name"
                   type="text"
@@ -42,22 +42,22 @@
               </div>
 
               <div class="sm:col-span-2">
-                <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('profile.email') }}</label>
                 <input
                   v-model="form.email"
                   type="email"
                   disabled
                   class="w-full px-4 py-3 bg-gray-800 bg-opacity-30 border border-gray-700 rounded-xl text-gray-400 cursor-not-allowed"
                 />
-                <p class="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                <p class="text-xs text-gray-500 mt-1">{{ $t('common.emailCannotChange') }}</p>
               </div>
 
               <div class="sm:col-span-2">
-                <label class="block text-sm font-medium text-gray-300 mb-2">Location</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('putAnAd.location') }}</label>
                 <input
                   v-model="form.location"
                   type="text"
-                  placeholder="e.g., Cairo, Egypt"
+                  :placeholder="$t('putAnAd.location')"
                   class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary-500 transition-all"
                 />
               </div>
@@ -66,11 +66,11 @@
 
           <!-- Preferences Section -->
           <div>
-            <h2 class="text-xl font-semibold text-white mb-4">Preferences</h2>
+            <h2 class="text-xl font-semibold text-white mb-4">{{ $t('common.preferences') }}</h2>
 
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Flatmate Preferences</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('common.flatmatePreferences') }}</label>
                 <div class="flex flex-wrap gap-2">
                   <button
                     v-for="pref in flatmateOptions"
@@ -91,7 +91,7 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Interests / Keywords</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('common.interestsKeywords') }}</label>
                 <div class="flex flex-wrap gap-2 mb-2">
                   <span
                     v-for="keyword in form.keywords"
@@ -111,7 +111,7 @@
                     v-model="newKeyword"
                     @keyup.enter.prevent="addKeyword"
                     type="text"
-                    placeholder="Add a keyword..."
+                    :placeholder="$t('profile.addKeyword')"
                     class="flex-1 px-4 py-2 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary-500 transition-all"
                   />
                   <button
@@ -119,7 +119,7 @@
                     @click="addKeyword"
                     class="px-4 py-2 bg-gray-700 text-white rounded-xl hover:bg-gray-600 transition-colors"
                   >
-                    Add
+                    {{ $t('common.add') }}
                   </button>
                 </div>
               </div>
@@ -131,7 +131,7 @@
             <BaseButton
               button-type="submit"
               :loading="saving"
-              label="Save Changes"
+              :label="$t('common.saveChanges')"
               variant="primary"
               size="md"
               class="flex-1"
@@ -141,7 +141,7 @@
               @click="logout"
               class="flex-1 px-8 py-4 bg-red-600 bg-opacity-20 border border-red-500 border-opacity-30 text-red-400 rounded-full font-semibold hover:bg-opacity-30 transition-all"
             >
-              Logout
+              {{ $t('common.logout') }}
             </button>
           </div>
 
@@ -155,19 +155,19 @@
       <div class="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-xl p-4 text-center border border-white border-opacity-10">
           <div class="text-2xl font-bold text-white">{{ stats.apartments }}</div>
-          <div class="text-sm text-gray-400">Listings</div>
+          <div class="text-sm text-gray-400">{{ $t('myApartments.title') }}</div>
         </div>
         <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-xl p-4 text-center border border-white border-opacity-10">
           <div class="text-2xl font-bold text-white">{{ stats.messages }}</div>
-          <div class="text-sm text-gray-400">Messages</div>
+          <div class="text-sm text-gray-400">{{ $t('messages.title') }}</div>
         </div>
         <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-xl p-4 text-center border border-white border-opacity-10">
           <div class="text-2xl font-bold text-white">{{ stats.views }}</div>
-          <div class="text-sm text-gray-400">Total Views</div>
+          <div class="text-sm text-gray-400">{{ $t('myApartments.views') }}</div>
         </div>
         <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-xl p-4 text-center border border-white border-opacity-10">
           <div class="text-2xl font-bold text-white">{{ memberSince }}</div>
-          <div class="text-sm text-gray-400">Member Since</div>
+          <div class="text-sm text-gray-400">{{ $t('common.memberSince') }}</div>
         </div>
       </div>
     </div>
@@ -176,11 +176,15 @@
 
 <script setup lang="ts">
 import { onMounted, ref, computed, reactive, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useApartmentStore } from '@/stores/apartment'
 import { useMessageStore } from '@/stores/message'
 import BaseButton from '@/components/buttons/BaseButton.vue'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -208,17 +212,17 @@ const userInitials = computed(() => {
   return `${user.value.first_name?.charAt(0) || ''}${user.value.last_name?.charAt(0) || ''}`.toUpperCase()
 })
 
-const flatmateOptions = [
-  'Clean',
-  'Quiet',
-  'Non-smoker',
-  'Early riser',
-  'Night owl',
-  'Social',
-  'Pet friendly',
-  'Student',
-  'Professional'
-]
+const flatmateOptions = computed(() => [
+  t('common.clean'),
+  t('common.quiet'),
+  t('auth.signup.nonSmoker'),
+  t('common.earlyRiser'),
+  t('common.nightOwl'),
+  t('common.social'),
+  t('common.petFriendly'),
+  t('auth.signup.student'),
+  t('common.professional')
+])
 
 const stats = computed(() => ({
   apartments: apartmentStore.myApartments.length,

@@ -11,8 +11,8 @@
 
     <div class="relative w-full max-w-sm sm:max-w-md lg:max-w-lg z-10 my-8 sm:my-16 lg:my-20">
       <BaseCard
-        title="Login"
-        subtitle="Login to your ROOF account"
+        :title="$t('auth.login.title')"
+        :subtitle="$t('auth.login.subtitle')"
         :success-msg="successMsg"
         :error-msg="errorMsg"
       >
@@ -21,7 +21,7 @@
             v-model="formData.email"
             id="email"
             type="email"
-            label="Email"
+            :label="$t('auth.login.email')"
             placeholder="you@example.com"
             required
           />
@@ -29,7 +29,7 @@
           <BasePasswordInput
             v-model="formData.password"
             id="password"
-            label="Password"
+            :label="$t('auth.login.password')"
             placeholder="••••••••"
             required
             :minlength="8"
@@ -39,17 +39,17 @@
           <div class="flex items-center justify-between">
             <label class="flex items-center">
               <input type="checkbox" v-model="rememberMe" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-green-500 focus:ring-green-500" />
-              <span class="ml-2 text-sm text-gray-300">Remember me</span>
+              <span class="ml-2 text-sm text-gray-300">{{ $t('auth.login.rememberMe') }}</span>
             </label>
             <router-link to="/forgot-password" class="text-sm hover:text-white transition-colors" style="color: #4BC974;">
-              Forgot password?
+              {{ $t('auth.login.forgotPassword') }}
             </router-link>
           </div>
 
           <BaseButton
             button-type="submit"
             :loading="loading"
-            :label="loading ? 'Logging in...' : 'Login'"
+            :label="loading ? $t('auth.login.loggingIn') : $t('auth.login.loginButton')"
             variant="primary"
             size="md"
             block
@@ -59,9 +59,9 @@
         <template #footer>
           <div class="mt-4 sm:mt-6 text-center">
             <p class="text-gray-300 text-xs sm:text-sm">
-              Don't have an account?
+              {{ $t('auth.login.noAccount') }}
               <router-link to="/signup" class="font-semibold hover:text-white transition-colors" style="color: #4BC974;">
-                Sign Up
+                {{ $t('auth.login.signUp') }}
               </router-link>
             </p>
           </div>
@@ -74,12 +74,15 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import BaseButton from '@/components/buttons/BaseButton.vue'
 import BaseInput from '@/components/inputs/BaseInput.vue'
 import BasePasswordInput from '@/components/inputs/BasePasswordInput.vue'
 import BaseCard from '@/components/cards/BaseCard.vue'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const route = useRoute()
@@ -105,7 +108,7 @@ const handleLogin = async () => {
     const success = await authStore.login(formData)
 
     if (success) {
-      successMsg.value = 'Login successful! Redirecting...'
+      successMsg.value = t('auth.login.success')
       uiStore.showSuccess('Welcome back!')
 
       // Redirect to the intended page or home

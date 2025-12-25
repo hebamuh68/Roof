@@ -8,8 +8,8 @@
     <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">Messages</h1>
-        <p class="text-gray-400">Your conversations with apartment owners and seekers</p>
+        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">{{ $t('messages.title') }}</h1>
+        <p class="text-gray-400">{{ $t('common.conversationsWith') }}</p>
       </div>
 
       <!-- Loading State -->
@@ -30,10 +30,10 @@
         <svg class="w-20 h-20 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
         </svg>
-        <h3 class="text-xl font-medium text-white mb-2">No messages yet</h3>
-        <p class="text-gray-400 mb-6">Start a conversation by contacting apartment owners</p>
+        <h3 class="text-xl font-medium text-white mb-2">{{ $t('common.noMessagesYet') }}</h3>
+        <p class="text-gray-400 mb-6">{{ $t('common.startConversation') }}</p>
         <router-link to="/apartments">
-          <BaseButton label="Browse Apartments" variant="primary" size="md" />
+          <BaseButton :label="$t('common.browseApartments')" variant="primary" size="md" />
         </router-link>
       </div>
 
@@ -93,9 +93,12 @@
 
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useMessageStore } from '@/stores/message'
 import type { User } from '@/types'
 import BaseButton from '@/components/buttons/BaseButton.vue'
+
+const { t } = useI18n()
 
 const messageStore = useMessageStore()
 
@@ -114,10 +117,10 @@ const formatTime = (dateStr: string) => {
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
 
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
+  if (diffMins < 1) return t('common.justNow')
+  if (diffMins < 60) return `${diffMins}${t('common.m')} ${t('common.ago')}`
+  if (diffHours < 24) return `${diffHours}${t('common.h')} ${t('common.ago')}`
+  if (diffDays < 7) return `${diffDays}${t('common.d')} ${t('common.ago')}`
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 

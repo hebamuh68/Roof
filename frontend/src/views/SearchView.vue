@@ -8,7 +8,7 @@
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
       <!-- Search Header -->
       <div class="mb-8">
-        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">Search Results</h1>
+        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">{{ $t('common.searchResults') }}</h1>
 
         <!-- Search Bar -->
         <div class="relative max-w-2xl">
@@ -17,7 +17,7 @@
             @input="handleSearchInput"
             @keyup.enter="performSearch"
             type="text"
-            placeholder="Search apartments..."
+            :placeholder="$t('apartments.searchPlaceholder')"
             class="w-full px-5 py-4 pl-12 bg-white bg-opacity-10 backdrop-blur-sm border border-white border-opacity-20 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary-500 text-lg"
           />
           <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,7 +63,7 @@
 
         <!-- Results Count -->
         <p v-if="!loading && searchQuery" class="text-gray-400 mt-4">
-          {{ totalResults }} results for "{{ searchQuery }}"
+          {{ totalResults }} {{ $t('common.resultsFor') }} "{{ searchQuery }}"
         </p>
       </div>
 
@@ -83,8 +83,8 @@
         <svg class="w-20 h-20 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
-        <h3 class="text-xl font-medium text-white mb-2">No results found</h3>
-        <p class="text-gray-400 mb-6">Try different keywords or check your spelling</p>
+        <h3 class="text-xl font-medium text-white mb-2">{{ $t('common.noResultsFound') }}</h3>
+        <p class="text-gray-400 mb-6">{{ $t('common.tryDifferentKeywords') }}</p>
       </div>
 
       <!-- Results Grid -->
@@ -101,9 +101,12 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useSearchStore } from '@/stores/search'
 import type { Apartment } from '@/types'
 import ApartmentGrid from '@/components/apartments/ApartmentGrid.vue'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()

@@ -12,29 +12,29 @@
     <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
       <!-- Header -->
       <div class="text-center mb-12">
-        <h1 class="text-4xl sm:text-5xl font-bold text-white mb-4">Contact Us</h1>
-        <p class="text-xl text-gray-400">We'd love to hear from you. Get in touch with our team.</p>
+        <h1 class="text-4xl sm:text-5xl font-bold text-white mb-4">{{ $t('contact.title') }}</h1>
+        <p class="text-xl text-gray-400">{{ $t('contact.subtitle') }}</p>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Contact Form -->
         <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-2xl p-6 sm:p-8 border border-white border-opacity-10">
-          <h2 class="text-2xl font-bold text-white mb-6">Send us a Message</h2>
+          <h2 class="text-2xl font-bold text-white mb-6">{{ $t('contact.send') }}</h2>
 
           <form @submit.prevent="handleSubmit" class="space-y-5">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-2">Name</label>
+              <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('contact.name') }}</label>
               <input
                 v-model="form.name"
                 type="text"
                 required
-                placeholder="Your name"
+                :placeholder="$t('contact.name')"
                 class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary-500 transition-all"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+              <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('contact.email') }}</label>
               <input
                 v-model="form.email"
                 type="email"
@@ -45,28 +45,28 @@
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-2">Subject</label>
+              <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('contact.subject') }}</label>
               <select
                 v-model="form.subject"
                 required
                 class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-secondary-500 transition-all"
               >
-                <option value="" disabled class="bg-gray-800">Select a subject</option>
-                <option value="general" class="bg-gray-800">General Inquiry</option>
-                <option value="support" class="bg-gray-800">Technical Support</option>
-                <option value="feedback" class="bg-gray-800">Feedback</option>
-                <option value="partnership" class="bg-gray-800">Partnership</option>
-                <option value="other" class="bg-gray-800">Other</option>
+                <option value="" disabled class="bg-gray-800">{{ $t('contact.selectSubject') }}</option>
+                <option value="general" class="bg-gray-800">{{ $t('contact.generalInquiry') }}</option>
+                <option value="support" class="bg-gray-800">{{ $t('contact.technicalSupport') }}</option>
+                <option value="feedback" class="bg-gray-800">{{ $t('contact.feedback') }}</option>
+                <option value="partnership" class="bg-gray-800">{{ $t('contact.partnership') }}</option>
+                <option value="other" class="bg-gray-800">{{ $t('contact.other') }}</option>
               </select>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-2">Message</label>
+              <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('contact.message') }}</label>
               <textarea
                 v-model="form.message"
                 rows="5"
                 required
-                placeholder="How can we help you?"
+                :placeholder="$t('contact.messagePlaceholder')"
                 class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary-500 resize-none transition-all"
               ></textarea>
             </div>
@@ -74,7 +74,7 @@
             <BaseButton
               button-type="submit"
               :loading="submitting"
-              label="Send Message"
+              :label="submitting ? $t('contact.sending') : $t('contact.send')"
               variant="primary"
               size="md"
               block
@@ -96,7 +96,7 @@
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-white mb-1">Email Us</h3>
+                <h3 class="text-lg font-semibold text-white mb-1">{{ $t('contact.emailUs') }}</h3>
                 <p class="text-gray-400">support@roof.eg</p>
                 <p class="text-gray-400">info@roof.eg</p>
               </div>
@@ -111,9 +111,9 @@
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-white mb-1">Call Us</h3>
+                <h3 class="text-lg font-semibold text-white mb-1">{{ $t('contact.callUs') }}</h3>
                 <p class="text-gray-400">+20 123 456 7890</p>
-                <p class="text-sm text-gray-500">Mon - Fri, 9am - 6pm EET</p>
+                <p class="text-sm text-gray-500">{{ $t('contact.hours') }}</p>
               </div>
             </div>
           </div>
@@ -127,7 +127,7 @@
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-white mb-1">Visit Us</h3>
+                <h3 class="text-lg font-semibold text-white mb-1">{{ $t('contact.visitUs') }}</h3>
                 <p class="text-gray-400">123 Innovation Street</p>
                 <p class="text-gray-400">Cairo, Egypt 11511</p>
               </div>
@@ -136,7 +136,7 @@
 
           <!-- Social Links -->
           <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-10">
-            <h3 class="text-lg font-semibold text-white mb-4">Follow Us</h3>
+            <h3 class="text-lg font-semibold text-white mb-4">{{ $t('contact.followUs') }}</h3>
             <div class="flex gap-4">
               <a href="#" class="w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center text-gray-300 hover:bg-gray-600 transition-colors">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
@@ -160,8 +160,11 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUIStore } from '@/stores/ui'
 import BaseButton from '@/components/buttons/BaseButton.vue'
+
+const { t } = useI18n()
 
 const uiStore = useUIStore()
 
@@ -185,8 +188,8 @@ const handleSubmit = async () => {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500))
 
-    successMessage.value = 'Thank you for your message! We\'ll get back to you soon.'
-    uiStore.showSuccess('Message sent successfully!')
+    successMessage.value = t('contact.thankYou')
+    uiStore.showSuccess(t('contact.success'))
 
     // Reset form
     form.name = ''
@@ -194,8 +197,8 @@ const handleSubmit = async () => {
     form.subject = ''
     form.message = ''
   } catch (error) {
-    errorMessage.value = 'Failed to send message. Please try again.'
-    uiStore.showError('Failed to send message')
+    errorMessage.value = t('contact.failed')
+    uiStore.showError(t('contact.failed'))
   } finally {
     submitting.value = false
   }

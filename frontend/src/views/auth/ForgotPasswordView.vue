@@ -11,8 +11,8 @@
 
     <div class="relative w-full max-w-sm sm:max-w-md lg:max-w-lg z-10 my-8 sm:my-16 lg:my-20">
       <BaseCard
-        title="Forgot Password"
-        subtitle="Enter your email to receive a reset link"
+        :title="$t('auth.forgotPassword.title')"
+        :subtitle="$t('auth.forgotPassword.subtitle')"
         :success-msg="successMsg"
         :error-msg="errorMsg"
       >
@@ -21,7 +21,7 @@
             v-model="email"
             id="email"
             type="email"
-            label="Email"
+            :label="$t('auth.forgotPassword.email')"
             placeholder="you@example.com"
             required
           />
@@ -29,7 +29,7 @@
           <BaseButton
             button-type="submit"
             :loading="loading"
-            :label="loading ? 'Sending...' : 'Send Reset Link'"
+            :label="loading ? $t('auth.forgotPassword.sending') : $t('auth.forgotPassword.sendResetLink')"
             variant="primary"
             size="md"
             block
@@ -40,13 +40,13 @@
           <svg class="w-16 h-16 mx-auto mb-4" style="color: #4BC974;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
           </svg>
-          <p class="text-gray-300">Check your email for the reset link.</p>
+          <p class="text-gray-300">{{ $t('common.checkEmail') }}</p>
         </div>
 
         <template #footer>
           <div class="mt-4 sm:mt-6 text-center">
             <router-link to="/login" class="text-gray-300 text-xs sm:text-sm hover:text-white transition-colors" style="color: #4BC974;">
-              Back to Login
+              {{ $t('auth.forgotPassword.backToLogin') }}
             </router-link>
           </div>
         </template>
@@ -57,10 +57,13 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import BaseButton from '@/components/buttons/BaseButton.vue'
 import BaseInput from '@/components/inputs/BaseInput.vue'
 import BaseCard from '@/components/cards/BaseCard.vue'
+
+const { t } = useI18n()
 
 const authStore = useAuthStore()
 

@@ -4,7 +4,7 @@
       :value="modelValue"
       @input="$emit('update:modelValue', $event.target.value)"
       type="text"
-      placeholder="Search"
+      :placeholder="$t('common.search')"
       :class="inputClasses"
       :style="inputStyle"
       @focus="handleFocus"
@@ -16,7 +16,10 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import SearchIcon from '../icons/search/SearchIcon.vue'
+
+const { t } = useI18n()
 
 const props = defineProps({
   modelValue: {

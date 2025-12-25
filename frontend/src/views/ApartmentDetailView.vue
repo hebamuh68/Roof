@@ -27,7 +27,7 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
-        Back to listings
+        {{ $t('apartments.backToListings') }}
       </button>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -48,7 +48,7 @@
                 class="absolute top-4 left-4 px-4 py-2 rounded-full text-sm font-semibold text-white"
                 style="background: linear-gradient(90deg, #FF8C42 0%, #E67A3A 100%);"
               >
-                Featured
+                {{ $t('apartments.details.featured') }}
               </div>
             </div>
 
@@ -82,7 +82,7 @@
                 </div>
               </div>
               <div class="text-right">
-                <div class="text-3xl font-bold text-white">{{ apartment.rent_per_week.toLocaleString() }} <span class="text-lg font-normal text-gray-400">EGP/week</span></div>
+                <div class="text-3xl font-bold text-white">{{ apartment.rent_per_week.toLocaleString() }} <span class="text-lg font-normal text-gray-400">{{ $t('apartments.details.egpWeek') }}</span></div>
                 <div class="text-sm text-gray-400 mt-1">{{ formattedDate }}</div>
               </div>
             </div>
@@ -90,13 +90,13 @@
 
           <!-- Description -->
           <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-10">
-            <h2 class="text-xl font-semibold text-white mb-4">About this place</h2>
+            <h2 class="text-xl font-semibold text-white mb-4">{{ $t('apartments.details.aboutPlace') }}</h2>
             <p class="text-gray-300 leading-relaxed whitespace-pre-line">{{ apartment.description }}</p>
           </div>
 
           <!-- Features -->
           <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-10">
-            <h2 class="text-xl font-semibold text-white mb-4">Features & Amenities</h2>
+            <h2 class="text-xl font-semibold text-white mb-4">{{ $t('apartments.details.featuresAmenities') }}</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div class="flex items-center gap-3 text-gray-300">
                 <div class="w-10 h-10 rounded-lg bg-secondary-500 bg-opacity-20 flex items-center justify-center">
@@ -105,7 +105,7 @@
                   </svg>
                 </div>
                 <div>
-                  <div class="text-sm text-gray-400">Type</div>
+                  <div class="text-sm text-gray-400">{{ $t('common.type') }}</div>
                   <div class="font-medium">{{ apartmentTypeLabel }}</div>
                 </div>
               </div>
@@ -117,8 +117,8 @@
                   </svg>
                 </div>
                 <div>
-                  <div class="text-sm text-gray-400">Bathroom</div>
-                  <div class="font-medium">{{ apartment.is_bathroom_solo ? 'Private' : 'Shared' }}</div>
+                  <div class="text-sm text-gray-400">{{ $t('putAnAd.bathroomType') }}</div>
+                  <div class="font-medium">{{ apartment.is_bathroom_solo ? $t('common.private') : $t('common.shared') }}</div>
                 </div>
               </div>
 
@@ -129,7 +129,7 @@
                   </svg>
                 </div>
                 <div>
-                  <div class="text-sm text-gray-400">Furnishing</div>
+                  <div class="text-sm text-gray-400">{{ $t('common.furnishing') }}</div>
                   <div class="font-medium capitalize">{{ apartment.furnishing_type }}</div>
                 </div>
               </div>
@@ -141,8 +141,8 @@
                   </svg>
                 </div>
                 <div>
-                  <div class="text-sm text-gray-400">Parking</div>
-                  <div class="font-medium capitalize">{{ apartment.parking_type || 'None' }}</div>
+                  <div class="text-sm text-gray-400">{{ $t('common.parking') }}</div>
+                  <div class="font-medium capitalize">{{ apartment.parking_type || $t('putAnAd.parkingNone') }}</div>
                 </div>
               </div>
 
@@ -153,8 +153,8 @@
                   </svg>
                 </div>
                 <div>
-                  <div class="text-sm text-gray-400">Duration</div>
-                  <div class="font-medium">{{ apartment.duration_len ? `${apartment.duration_len} weeks` : 'Flexible' }}</div>
+                  <div class="text-sm text-gray-400">{{ $t('putAnAd.duration') }}</div>
+                  <div class="font-medium">{{ apartment.duration_len ? `${apartment.duration_len} ${$t('common.weeks')}` : $t('common.flexible') }}</div>
                 </div>
               </div>
 
@@ -165,15 +165,15 @@
                   </svg>
                 </div>
                 <div>
-                  <div class="text-sm text-gray-400">Accepts</div>
-                  <div class="font-medium capitalize">{{ apartment.place_accept || 'Anyone' }}</div>
+                  <div class="text-sm text-gray-400">{{ $t('apartments.details.accepts') }}</div>
+                  <div class="font-medium capitalize">{{ apartment.place_accept || $t('common.anyone') }}</div>
                 </div>
               </div>
             </div>
 
             <!-- Keywords -->
             <div v-if="apartment.keywords && apartment.keywords.length > 0" class="mt-6 pt-6 border-t border-white border-opacity-10">
-              <h3 class="text-sm font-medium text-gray-400 mb-3">Amenities</h3>
+              <h3 class="text-sm font-medium text-gray-400 mb-3">{{ $t('common.amenities') }}</h3>
               <div class="flex flex-wrap gap-2">
                 <span
                   v-for="keyword in apartment.keywords"
@@ -191,20 +191,20 @@
         <div class="space-y-6">
           <!-- Contact Card -->
           <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-10 sticky top-24">
-            <h3 class="text-lg font-semibold text-white mb-4">Contact the Owner</h3>
+            <h3 class="text-lg font-semibold text-white mb-4">{{ $t('apartments.details.contactOwner') }}</h3>
 
             <div v-if="isAuthenticated">
               <textarea
                 v-model="messageContent"
                 rows="4"
-                placeholder="Write your message here..."
+                :placeholder="$t('apartments.details.writeMessage')"
                 class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary-500 resize-none mb-4"
               ></textarea>
 
               <BaseButton
                 @click="sendInquiry"
                 :loading="sendingMessage"
-                label="Send Message"
+                :label="$t('messages.sendMessage')"
                 variant="primary"
                 size="md"
                 block
@@ -212,10 +212,10 @@
             </div>
 
             <div v-else class="text-center">
-              <p class="text-gray-400 mb-4">Login to contact the owner</p>
+              <p class="text-gray-400 mb-4">{{ $t('apartments.details.contactOwner') }}</p>
               <router-link to="/login">
                 <BaseButton
-                  label="Login"
+                  :label="$t('nav.login')"
                   variant="primary"
                   size="md"
                   block
@@ -230,7 +230,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                 </svg>
-                <span>{{ apartment.view_count || 0 }} views</span>
+                <span>{{ apartment.view_count || 0 }} {{ $t('myApartments.views') }}</span>
               </div>
               <div>Listed {{ listedDate }}</div>
             </div>
@@ -244,8 +244,8 @@
       <svg class="w-24 h-24 mx-auto text-gray-600 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
       </svg>
-      <h2 class="text-2xl font-bold text-white mb-2">Apartment Not Found</h2>
-      <p class="text-gray-400 mb-6">The apartment you're looking for doesn't exist or has been removed.</p>
+      <h2 class="text-2xl font-bold text-white mb-2">{{ $t('common.apartmentNotFoundTitle') }}</h2>
+      <p class="text-gray-400 mb-6">{{ $t('common.apartmentRemoved') }}</p>
       <router-link to="/apartments">
         <BaseButton label="Browse Apartments" variant="primary" size="md" />
       </router-link>
@@ -256,11 +256,14 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useApartmentStore } from '@/stores/apartment'
 import { useAuthStore } from '@/stores/auth'
 import { useMessageStore } from '@/stores/message'
 import { useUIStore } from '@/stores/ui'
 import BaseButton from '@/components/buttons/BaseButton.vue'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()

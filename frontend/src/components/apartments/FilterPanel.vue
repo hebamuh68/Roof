@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { ApartmentFilters } from '@/types'
 import BaseButton from '@/components/buttons/BaseButton.vue'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   modelValue: ApartmentFilters
@@ -22,38 +25,38 @@ watch(() => props.modelValue, (newVal) => {
   filters.value = { ...newVal }
 }, { deep: true })
 
-const apartmentTypes = [
-  { value: '', label: 'Any Type' },
-  { value: 'studio', label: 'Studio' },
+const apartmentTypes = computed(() => [
+  { value: '', label: t('common.anyType') },
+  { value: 'studio', label: t('common.studio') },
   { value: '1bhk', label: '1 BHK' },
   { value: '2bhk', label: '2 BHK' },
   { value: '3bhk', label: '3 BHK' },
   { value: '4bhk', label: '4 BHK' },
-  { value: 'villa', label: 'Villa' },
-  { value: 'penthouse', label: 'Penthouse' }
-]
+  { value: 'villa', label: t('common.villa') },
+  { value: 'penthouse', label: t('common.penthouse') }
+])
 
-const furnishingTypes = [
-  { value: '', label: 'Any' },
-  { value: 'furnished', label: 'Furnished' },
-  { value: 'semi-furnished', label: 'Semi-Furnished' },
-  { value: 'unfurnished', label: 'Unfurnished' }
-]
+const furnishingTypes = computed(() => [
+  { value: '', label: t('common.any') },
+  { value: 'furnished', label: t('putAnAd.furnished') },
+  { value: 'semi-furnished', label: t('putAnAd.semiFurnished') },
+  { value: 'unfurnished', label: t('putAnAd.unfurnished') }
+])
 
-const parkingTypes = [
-  { value: '', label: 'Any' },
-  { value: 'none', label: 'None' },
-  { value: 'street', label: 'Street' },
-  { value: 'garage', label: 'Garage' },
-  { value: 'covered', label: 'Covered' }
-]
+const parkingTypes = computed(() => [
+  { value: '', label: t('common.any') },
+  { value: 'none', label: t('putAnAd.parkingNone') },
+  { value: 'street', label: t('putAnAd.parkingStreet') },
+  { value: 'garage', label: t('putAnAd.parkingGarage') },
+  { value: 'covered', label: t('putAnAd.parkingCovered') }
+])
 
-const genderPreferences = [
-  { value: '', label: 'Any' },
-  { value: 'any', label: 'No Preference' },
-  { value: 'male', label: 'Male Only' },
-  { value: 'female', label: 'Female Only' }
-]
+const genderPreferences = computed(() => [
+  { value: '', label: t('common.any') },
+  { value: 'any', label: t('putAnAd.genderNoPreference') },
+  { value: 'male', label: t('putAnAd.genderMale') },
+  { value: 'female', label: t('putAnAd.genderFemale') }
+])
 
 const applyFilters = () => {
   emit('update:modelValue', filters.value)
@@ -82,7 +85,7 @@ const togglePanel = () => {
       <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
       </svg>
-      <span class="font-medium text-gray-700">Filters</span>
+      <span class="font-medium text-gray-700">{{ $t('common.filters') }}</span>
       <span
         v-if="Object.keys(modelValue).filter(k => modelValue[k as keyof ApartmentFilters]).length > 0"
         class="ml-1 px-2 py-0.5 text-xs font-semibold text-white rounded-full"
@@ -107,7 +110,7 @@ const togglePanel = () => {
       >
         <div class="p-4 border-b border-gray-100">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">Filters</h3>
+            <h3 class="text-lg font-semibold text-gray-900">{{ $t('common.filters') }}</h3>
             <button @click="isOpen = false" class="p-1 hover:bg-gray-100 rounded-lg transition-colors">
               <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -119,18 +122,18 @@ const togglePanel = () => {
         <div class="p-4 space-y-4 max-h-96 overflow-y-auto">
           <!-- Location -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('apartments.details.location') }}</label>
             <input
               v-model="filters.location"
               type="text"
-              placeholder="Enter location..."
+              :placeholder="$t('common.enterLocation')"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-colors"
             />
           </div>
 
           <!-- Apartment Type -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Apartment Type</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('putAnAd.apartmentType') }}</label>
             <select
               v-model="filters.apartment_type"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-colors"
@@ -143,12 +146,12 @@ const togglePanel = () => {
 
           <!-- Price Range -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Price Range (per week)</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('common.priceRange') }}</label>
             <div class="flex items-center gap-2">
               <input
                 v-model.number="filters.min_price"
                 type="number"
-                placeholder="Min"
+                :placeholder="$t('common.min')"
                 min="0"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-colors"
               />
@@ -156,7 +159,7 @@ const togglePanel = () => {
               <input
                 v-model.number="filters.max_price"
                 type="number"
-                placeholder="Max"
+                :placeholder="$t('common.max')"
                 min="0"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-colors"
               />
@@ -165,7 +168,7 @@ const togglePanel = () => {
 
           <!-- Furnishing -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Furnishing</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('common.furnishing') }}</label>
             <select
               v-model="filters.furnishing_type"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-colors"
@@ -178,7 +181,7 @@ const togglePanel = () => {
 
           <!-- Bathroom -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Bathroom</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('putAnAd.bathroomType') }}</label>
             <div class="flex gap-3">
               <label class="flex items-center gap-2 cursor-pointer">
                 <input
@@ -187,7 +190,7 @@ const togglePanel = () => {
                   v-model="filters.is_bathroom_solo"
                   class="w-4 h-4 text-secondary-500"
                 />
-                <span class="text-sm text-gray-600">Any</span>
+                <span class="text-sm text-gray-600">{{ $t('putAnAd.bathroomAny') }}</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
                 <input
@@ -196,7 +199,7 @@ const togglePanel = () => {
                   v-model="filters.is_bathroom_solo"
                   class="w-4 h-4 text-secondary-500"
                 />
-                <span class="text-sm text-gray-600">Private</span>
+                <span class="text-sm text-gray-600">{{ $t('common.private') }}</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
                 <input
@@ -205,14 +208,14 @@ const togglePanel = () => {
                   v-model="filters.is_bathroom_solo"
                   class="w-4 h-4 text-secondary-500"
                 />
-                <span class="text-sm text-gray-600">Shared</span>
+                <span class="text-sm text-gray-600">{{ $t('common.shared') }}</span>
               </label>
             </div>
           </div>
 
           <!-- Parking -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Parking</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('common.parking') }}</label>
             <select
               v-model="filters.parking_type"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-colors"
@@ -225,7 +228,7 @@ const togglePanel = () => {
 
           <!-- Gender Preference -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Gender Preference</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('common.genderPreference') }}</label>
             <select
               v-model="filters.place_accept"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-colors"
@@ -243,12 +246,12 @@ const togglePanel = () => {
             @click="clearFilters"
             class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
           >
-            Clear All
+            {{ $t('common.clearAll') }}
           </button>
           <BaseButton
             @click="applyFilters"
             :loading="loading"
-            label="Apply Filters"
+            :label="$t('apartments.filters.apply')"
             variant="primary"
             size="sm"
             class="flex-1"

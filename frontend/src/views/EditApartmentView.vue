@@ -23,8 +23,8 @@
           </svg>
         </button>
         <div>
-          <h1 class="text-3xl sm:text-4xl font-bold text-white mb-1">Edit Apartment</h1>
-          <p class="text-gray-400">Update your listing details</p>
+          <h1 class="text-3xl sm:text-4xl font-bold text-white mb-1">{{ $t('common.editApartment') }}</h1>
+          <p class="text-gray-400">{{ $t('common.updateListingDetails') }}</p>
         </div>
       </div>
 
@@ -33,10 +33,10 @@
         <form @submit.prevent="handleSubmit" class="space-y-8">
           <!-- Basic Info Section -->
           <div>
-            <h2 class="text-xl font-semibold text-white mb-4">Basic Information</h2>
+            <h2 class="text-xl font-semibold text-white mb-4">{{ $t('common.basicInformation') }}</h2>
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Title *</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('putAnAd.titleLabel') }} *</label>
                 <input
                   v-model="form.title"
                   type="text"
@@ -46,7 +46,7 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Description *</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('putAnAd.description') }} *</label>
                 <textarea
                   v-model="form.description"
                   rows="4"
@@ -56,7 +56,7 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Location *</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('putAnAd.location') }} *</label>
                 <input
                   v-model="form.location"
                   type="text"
@@ -69,10 +69,10 @@
 
           <!-- Property Details -->
           <div>
-            <h2 class="text-xl font-semibold text-white mb-4">Property Details</h2>
+            <h2 class="text-xl font-semibold text-white mb-4">{{ $t('common.propertyDetails') }}</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Apartment Type</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('putAnAd.apartmentType') }}</label>
                 <select
                   v-model="form.apartment_type"
                   class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-secondary-500 transition-all"
@@ -88,7 +88,7 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Rent per Week (EGP)</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('common.rentPerWeekEGP') }}</label>
                 <input
                   v-model.number="form.rent_per_week"
                   type="number"
@@ -98,7 +98,7 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Available From</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('putAnAd.availableFrom') }}</label>
                 <input
                   v-model="form.start_date"
                   type="date"
@@ -107,7 +107,7 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Duration (weeks)</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('putAnAd.duration') }}</label>
                 <input
                   v-model.number="form.duration_len"
                   type="number"
@@ -118,27 +118,27 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Furnishing</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('common.furnishing') }}</label>
                 <select
                   v-model="form.furnishing_type"
                   class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-secondary-500 transition-all"
                 >
-                  <option value="furnished" class="bg-gray-800">Furnished</option>
-                  <option value="semi-furnished" class="bg-gray-800">Semi-Furnished</option>
-                  <option value="unfurnished" class="bg-gray-800">Unfurnished</option>
+                  <option value="furnished" class="bg-gray-800">{{ $t('common.furnished') }}</option>
+                  <option value="semi-furnished" class="bg-gray-800">{{ $t('common.semiFurnished') }}</option>
+                  <option value="unfurnished" class="bg-gray-800">{{ $t('common.unfurnished') }}</option>
                 </select>
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Parking</label>
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ $t('common.parking') }}</label>
                 <select
                   v-model="form.parking_type"
                   class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-secondary-500 transition-all"
                 >
-                  <option value="none" class="bg-gray-800">None</option>
-                  <option value="street" class="bg-gray-800">Street</option>
-                  <option value="garage" class="bg-gray-800">Garage</option>
-                  <option value="covered" class="bg-gray-800">Covered</option>
+                  <option value="none" class="bg-gray-800">{{ $t('common.none') }}</option>
+                  <option value="street" class="bg-gray-800">{{ $t('common.street') }}</option>
+                  <option value="garage" class="bg-gray-800">{{ $t('common.garage') }}</option>
+                  <option value="covered" class="bg-gray-800">{{ $t('common.covered') }}</option>
                 </select>
               </div>
             </div>
@@ -151,12 +151,12 @@
               @click="goBack"
               class="flex-1 px-8 py-4 bg-gray-700 text-white rounded-full font-semibold hover:bg-gray-600 transition-all"
             >
-              Cancel
+              {{ $t('common.cancel') }}
             </button>
             <BaseButton
               button-type="submit"
               :loading="saving"
-              label="Save Changes"
+              :label="$t('common.saveChanges')"
               variant="primary"
               size="md"
               class="flex-1"
@@ -170,10 +170,10 @@
 
     <!-- Not Found -->
     <div v-else class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 text-center">
-      <h2 class="text-2xl font-bold text-white mb-2">Apartment Not Found</h2>
-      <p class="text-gray-400 mb-6">The apartment you're trying to edit doesn't exist.</p>
+      <h2 class="text-2xl font-bold text-white mb-2">{{ $t('common.apartmentNotFoundTitle') }}</h2>
+      <p class="text-gray-400 mb-6">{{ $t('common.apartmentNotFound') }}</p>
       <router-link to="/my-apartments">
-        <BaseButton label="Back to My Apartments" variant="primary" size="md" />
+        <BaseButton :label="$t('myApartments.backToMyApartments')" variant="primary" size="md" />
       </router-link>
     </div>
   </div>
@@ -182,9 +182,12 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useApartmentStore } from '@/stores/apartment'
 import { useUIStore } from '@/stores/ui'
 import BaseButton from '@/components/buttons/BaseButton.vue'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -223,13 +226,13 @@ const handleSubmit = async () => {
   try {
     const success = await apartmentStore.updateApartment(Number(route.params.id), form)
     if (success) {
-      uiStore.showSuccess('Apartment updated successfully!')
+      uiStore.showSuccess(t('common.apartmentUpdated'))
       router.push({ name: 'myApartments' })
     } else {
-      error.value = apartmentStore.error || 'Failed to update apartment'
+      error.value = apartmentStore.error || t('common.failedUpdateApartment')
     }
   } catch (err: any) {
-    error.value = err.message || 'Something went wrong'
+    error.value = err.message || t('common.somethingWentWrong')
   } finally {
     saving.value = false
   }
