@@ -6,13 +6,13 @@
     </div>
 
     <!-- Green accent orbs -->
-    <div class="absolute top-20 -left-20 w-72 h-72 rounded-full blur-3xl opacity-10" style="background: linear-gradient(90deg, #4BC974 0%, #00A060 100%);"></div>
-    <div class="absolute bottom-20 -right-20 w-72 h-72 rounded-full blur-3xl opacity-10" style="background: linear-gradient(90deg, #00A060 0%, #4BC974 100%);"></div>
+    <div class="absolute top-20 w-72 h-72 rounded-full blur-3xl opacity-10 orb-start" style="background: linear-gradient(90deg, #4BC974 0%, #00A060 100%);"></div>
+    <div class="absolute bottom-20 w-72 h-72 rounded-full blur-3xl opacity-10 orb-end" style="background: linear-gradient(90deg, #00A060 0%, #4BC974 100%);"></div>
 
     <div class="relative text-center px-4">
       <div class="text-9xl font-bold text-white mb-4 opacity-20">404</div>
-      <h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">{{ $t('common.pageNotFound') }}</h1>
-      <p class="text-gray-400 mb-8 max-w-md mx-auto">
+      <h1 class="text-heading-1 text-white mb-4">{{ $t('common.pageNotFound') }}</h1>
+      <p class="text-body text-gray-400 mb-8 max-w-md mx-auto">
         {{ $t('common.pageMoved') }}
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -35,3 +35,23 @@ import BaseButton from '@/components/buttons/BaseButton.vue'
 
 const { t } = useI18n()
 </script>
+
+<style scoped>
+.orb-start {
+  left: -5rem;
+}
+
+.orb-end {
+  right: -5rem;
+}
+
+[dir="rtl"] .orb-start {
+  left: auto;
+  right: -5rem;
+}
+
+[dir="rtl"] .orb-end {
+  right: auto;
+  left: -5rem;
+}
+</style>

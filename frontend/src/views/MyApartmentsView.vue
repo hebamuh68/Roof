@@ -9,8 +9,8 @@
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">{{ $t('myApartments.title') }}</h1>
-          <p class="text-gray-400">{{ $t('myApartments.subtitle') }}</p>
+          <h1 class="text-heading-1 text-white mb-2">{{ $t('myApartments.title') }}</h1>
+          <p class="text-body text-gray-400">{{ $t('myApartments.subtitle') }}</p>
         </div>
         <router-link to="/put-an-ad">
           <BaseButton :label="$t('common.newListing')" variant="primary" size="md" />
@@ -54,11 +54,8 @@
         <svg class="w-20 h-20 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
         </svg>
-        <h3 class="text-xl font-medium text-white mb-2">{{ $t('common.noApartmentsYet') }}</h3>
-        <p class="text-gray-400 mb-6">{{ $t('common.startCreatingListing') }}</p>
-        <router-link to="/put-an-ad">
-          <BaseButton :label="$t('common.createListing')" variant="primary" size="md" />
-        </router-link>
+        <h3 class="text-heading-3 text-white mb-2">{{ $t('common.noApartmentsYet') }}</h3>
+        <p class="text-body text-gray-400 mb-6">{{ $t('common.startCreatingListing') }}</p>
       </div>
 
       <!-- Apartments Grid -->
@@ -191,8 +188,8 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
       >
         <div class="bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4 border border-gray-700">
-          <h3 class="text-xl font-semibold text-white mb-2">{{ $t('common.delete') }} {{ $t('putAnAd.apartmentType') }}</h3>
-          <p class="text-gray-400 mb-6">{{ $t('common.deleteConfirmation', { title: selectedApartment?.title }) }}</p>
+          <h3 class="text-heading-3 text-white mb-2">{{ $t('common.delete') }} {{ $t('putAnAd.apartmentType') }}</h3>
+          <p class="text-body text-gray-400 mb-6">{{ $t('common.deleteConfirmation', { title: selectedApartment?.title }) }}</p>
           <div class="flex gap-3">
             <button
               @click="showDeleteModal = false"

@@ -82,9 +82,10 @@ app.add_middleware(
 )
 
 # Mount static files for image serving
-UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "uploads"))
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-app.mount("/static/images", StaticFiles(directory=str(UPLOAD_DIR)), name="images")
+# Use the static/images directory in the backend folder
+STATIC_IMAGES_DIR = Path(__file__).parent.parent / "static" / "images"
+STATIC_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static/images", StaticFiles(directory=str(STATIC_IMAGES_DIR)), name="images")
 
 app.include_router(search_api.router)
 app.include_router(apartment_api.router)

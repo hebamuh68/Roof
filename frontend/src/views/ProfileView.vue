@@ -11,8 +11,8 @@
         <div class="w-24 h-24 mx-auto rounded-full flex items-center justify-center text-white text-3xl font-bold mb-4" style="background: linear-gradient(90deg, #4BC974 0%, #00A060 100%);">
           {{ userInitials }}
         </div>
-        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">{{ fullName }}</h1>
-        <p class="text-gray-400 capitalize">{{ user?.role }}</p>
+        <h1 class="text-heading-1 text-white mb-2">{{ fullName }}</h1>
+        <p class="text-body text-gray-400 capitalize">{{ user?.role }}</p>
       </div>
 
       <!-- Profile Card -->
@@ -20,7 +20,7 @@
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <!-- Personal Info Section -->
           <div>
-            <h2 class="text-xl font-semibold text-white mb-4">{{ $t('common.personalInformation') }}</h2>
+            <h2 class="text-heading-2 text-white mb-4">{{ $t('common.personalInformation') }}</h2>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -66,7 +66,7 @@
 
           <!-- Preferences Section -->
           <div>
-            <h2 class="text-xl font-semibold text-white mb-4">{{ $t('common.preferences') }}</h2>
+            <h2 class="text-heading-2 text-white mb-4">{{ $t('common.preferences') }}</h2>
 
             <div class="space-y-4">
               <div>
@@ -176,7 +176,6 @@
 
 <script setup lang="ts">
 import { onMounted, ref, computed, reactive, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'

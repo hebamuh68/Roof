@@ -8,7 +8,7 @@
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
       <!-- Search Header -->
       <div class="mb-8">
-        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">{{ $t('common.searchResults') }}</h1>
+        <h1 class="text-heading-1 text-white mb-4">{{ $t('common.searchResults') }}</h1>
 
         <!-- Search Bar -->
         <div class="relative max-w-2xl">
