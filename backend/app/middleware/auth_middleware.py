@@ -2,6 +2,8 @@ from fastapi import HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError
 from sqlalchemy.orm import Session
+# Import apartment_sql first to resolve relationship with UserDB
+from app.schemas import apartment_sql  # noqa: F401
 from app.schemas.user_sql import UserDB as User
 from app.database.database import get_db
 from app.utils.auth import verify_token

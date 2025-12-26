@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr, Field
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from app.models.auth_pyd import Token, RefreshTokenRequest
-from app.models.user_pyd import UserData, UserLogin
+from app.models.user_pyd import UserData, UserLogin, UserResponse
 from app.schemas.user_sql import UserDB as User
 from app.database.database import get_db
 from app.services.auth_service import create_user, login_user, get_user, refresh_access_token
@@ -59,7 +59,7 @@ async def refresh_token(
     return refresh_access_token(token_request.refresh_token, db)
 
 
-@router.get("/auth/me", response_model=UserData)
+@router.get("/auth/me", response_model=UserResponse)
 async def get_me(current_user: User = Depends(get_current_user)):
     return get_user(current_user)
 

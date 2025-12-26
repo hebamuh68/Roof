@@ -312,6 +312,7 @@
     "hours": "Mon - Fri, 9am - 6pm EET"
   },
   "common": {
+    "duplicate":"Duplicate",
     "loading": "Loading...",
     "error": "An error occurred",
     "success": "Success",
