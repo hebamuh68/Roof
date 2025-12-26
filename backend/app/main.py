@@ -67,11 +67,16 @@ async def logging_middleware(request: Request, call_next):
         log_request(request, error=e)
         raise
 
-# CORS for frontend dev server
+# CORS for frontend (dev and production)
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
+
+# Add production frontend URL if configured
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    origins.append(frontend_url)
 
 app.add_middleware(
     CORSMiddleware,
