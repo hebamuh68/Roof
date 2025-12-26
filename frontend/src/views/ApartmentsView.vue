@@ -6,14 +6,14 @@
     </div>
 
     <!-- Green accent orbs -->
-    <div class="absolute top-20 -left-20 w-72 h-72 rounded-full blur-3xl opacity-10" style="background: linear-gradient(90deg, #4BC974 0%, #00A060 100%);"></div>
-    <div class="absolute bottom-20 -right-20 w-72 h-72 rounded-full blur-3xl opacity-10" style="background: linear-gradient(90deg, #00A060 0%, #4BC974 100%);"></div>
+    <div class="absolute top-20 w-72 h-72 rounded-full blur-3xl opacity-10 orb-start" style="background: linear-gradient(90deg, #4BC974 0%, #00A060 100%);"></div>
+    <div class="absolute bottom-20 w-72 h-72 rounded-full blur-3xl opacity-10 orb-end" style="background: linear-gradient(90deg, #00A060 0%, #4BC974 100%);"></div>
 
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">{{ $t('apartments.browse') }}</h1>
-        <p class="text-gray-400">{{ $t('apartments.subtitle') }}</p>
+        <h1 class="text-heading-1 text-white mb-2">{{ $t('apartments.browse') }}</h1>
+        <p class="text-body text-gray-400">{{ $t('apartments.subtitle') }}</p>
       </div>
 
       <!-- Search and Filters Bar -->
@@ -294,3 +294,23 @@ watch(() => route.query, () => {
   fetchApartments()
 })
 </script>
+
+<style scoped>
+.orb-start {
+  left: -5rem;
+}
+
+.orb-end {
+  right: -5rem;
+}
+
+[dir="rtl"] .orb-start {
+  left: auto;
+  right: -5rem;
+}
+
+[dir="rtl"] .orb-end {
+  right: auto;
+  left: -5rem;
+}
+</style>

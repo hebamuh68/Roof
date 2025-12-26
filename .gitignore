@@ -154,6 +154,8 @@ temp/
 tmp/
 uploads/
 backend/uploads/
+backend/static/images/
+backend/scripts/
 
 # Elasticsearch
 elasticsearch_data/

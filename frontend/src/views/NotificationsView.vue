@@ -9,8 +9,8 @@
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">{{ $t('notifications.title') }}</h1>
-          <p class="text-gray-400">
+          <h1 class="text-heading-1 text-white mb-2">{{ $t('notifications.title') }}</h1>
+          <p class="text-body text-gray-400">
             <span v-if="unreadCount > 0">{{ unreadCount }} {{ $t('common.unread') }}</span>
             <span v-else>{{ $t('common.allCaughtUp') }}</span>
           </p>
