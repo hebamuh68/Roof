@@ -130,7 +130,7 @@
                 </div>
                 <div>
                   <div class="text-sm text-gray-400">{{ $t('common.furnishing') }}</div>
-                  <div class="font-medium capitalize">{{ apartment.furnishing_type }}</div>
+                  <div class="font-medium">{{ furnishingTypeLabel }}</div>
                 </div>
               </div>
 
@@ -142,7 +142,7 @@
                 </div>
                 <div>
                   <div class="text-sm text-gray-400">{{ $t('common.parking') }}</div>
-                  <div class="font-medium capitalize">{{ apartment.parking_type || $t('putAnAd.parkingNone') }}</div>
+                  <div class="font-medium">{{ parkingTypeLabel }}</div>
                 </div>
               </div>
 
@@ -166,7 +166,7 @@
                 </div>
                 <div>
                   <div class="text-sm text-gray-400">{{ $t('apartments.details.accepts') }}</div>
-                  <div class="font-medium capitalize">{{ apartment.place_accept || $t('common.anyone') }}</div>
+                  <div class="font-medium">{{ genderPreferenceLabel }}</div>
                 </div>
               </div>
             </div>
@@ -180,7 +180,7 @@
                   :key="keyword"
                   class="px-3 py-1.5 bg-secondary-500 bg-opacity-20 text-secondary-300 rounded-full text-sm"
                 >
-                  {{ keyword }}
+                  {{ translateKeyword(keyword) }}
                 </span>
               </div>
             </div>
@@ -257,6 +257,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import i18n from '@/i18n'
 import { useApartmentStore } from '@/stores/apartment'
 import { useAuthStore } from '@/stores/auth'
 import { useMessageStore } from '@/stores/message'
@@ -296,22 +297,113 @@ const getImageUrl = (img: string) => {
 }
 
 const apartmentTypeLabel = computed(() => {
-  const types: Record<string, string> = {
-    studio: 'Studio',
-    '1bhk': '1 BHK',
-    '2bhk': '2 BHK',
-    '3bhk': '3 BHK',
-    '4bhk': '4 BHK',
-    villa: 'Villa',
-    penthouse: 'Penthouse'
+  if (!apartment.value?.apartment_type) return ''
+  const type = apartment.value.apartment_type.toLowerCase()
+  // Valid apartment types
+  const validTypes = ['studio', '1bhk', '2bhk', '3bhk', '4bhk', 'villa', 'penthouse']
+  if (validTypes.includes(type)) {
+    const translationKey = `common.${type}`
+    const translated = t(translationKey)
+    return translated !== translationKey ? translated : apartment.value.apartment_type
   }
-  return types[apartment.value?.apartment_type || ''] || apartment.value?.apartment_type
+  // If it's not a valid type, try to translate it anyway (for edge cases)
+  const translationKey = `common.${type}`
+  const translated = t(translationKey)
+  return translated !== translationKey ? translated : apartment.value.apartment_type
 })
 
+const furnishingTypeLabel = computed(() => {
+  if (!apartment.value?.furnishing_type) return ''
+  let type = apartment.value.furnishing_type
+  // Handle hyphenated values (e.g., "semi-furnished" -> "semiFurnished")
+  if (type === 'semi-furnished') {
+    type = 'semiFurnished'
+  }
+  const translationKey = `putAnAd.${type}`
+  let translated = t(translationKey)
+  // Fallback to common translations
+  if (translated === translationKey) {
+    translated = t(`common.${type}`)
+  }
+  return translated !== `common.${type}` ? translated : apartment.value.furnishing_type
+})
+
+const parkingTypeLabel = computed(() => {
+  if (!apartment.value?.parking_type) return t('putAnAd.parkingNone')
+  const type = apartment.value.parking_type.toLowerCase()
+  // Valid parking types
+  const validParkingTypes = ['none', 'street', 'garage', 'covered']
+  if (validParkingTypes.includes(type)) {
+    const translationKey = `putAnAd.parking${type.charAt(0).toUpperCase() + type.slice(1)}`
+    let translated = t(translationKey)
+    // Fallback to common translations if parking-specific doesn't exist
+    if (translated === translationKey) {
+      translated = t(`common.${type}`)
+    }
+    return translated !== `common.${type}` ? translated : apartment.value.parking_type
+  }
+  // If it's not a valid parking type, try to translate it anyway (for edge cases)
+  const translationKey = `common.${type}`
+  const translated = t(translationKey)
+  return translated !== translationKey ? translated : apartment.value.parking_type
+})
+
+const genderPreferenceLabel = computed(() => {
+  if (!apartment.value?.place_accept) return t('common.anyone')
+  const accept = apartment.value.place_accept.toLowerCase().trim()
+  if (accept === 'male' || accept === 'ذكر' || accept === 'm') return t('common.male')
+  if (accept === 'female' || accept === 'أنثى' || accept === 'f') return t('common.female')
+  if (accept === 'both' || accept === 'all' || accept === 'any') return t('common.both')
+  // Try to translate if it's a known key
+  const translationKey = `common.${accept}`
+  const translated = t(translationKey)
+  return translated !== translationKey ? translated : apartment.value.place_accept
+})
+
+const translateKeyword = (keyword: string) => {
+  const normalized = keyword.toLowerCase().trim()
+  // Handle special cases with numbers/symbols and multi-word keywords
+  let key = normalized.replace(/\s+/g, '') // Remove spaces for camelCase
+  if (normalized === '24/7' || normalized === '24-7') {
+    key = 'twentyFourSeven'
+  } else if (normalized === 'cctv') {
+    key = 'cctv'
+  } else if (normalized === 'ac' || normalized === 'a/c') {
+    key = 'ac'
+  } else if (normalized === 'student friendly' || normalized === 'studentfriendly') {
+    key = 'studentFriendly'
+  } else if (normalized === 'study area' || normalized === 'studyarea') {
+    key = 'studyArea'
+  } else if (normalized === 'near metro' || normalized === 'nearmetro') {
+    key = 'nearMetro'
+  } else if (normalized.includes(' ')) {
+    // Convert multi-word to camelCase: "ready to move" -> "readyToMove"
+    key = normalized.split(' ').map((word, index) => 
+      index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)
+    ).join('')
+  }
+  
+  const translationKey = `common.${key}`
+  const translated = t(translationKey)
+  return translated !== translationKey ? translated : keyword
+}
+
 const formattedDate = computed(() => {
-  if (!apartment.value?.start_date) return 'Available now'
+  if (!apartment.value?.start_date) return t('common.availableNow')
   const date = new Date(apartment.value.start_date)
-  return `Available from ${date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+  const currentLocale = i18n.global.locale.value
+  const localeMap: Record<string, string> = {
+    'en': 'en-US',
+    'ar': 'ar-EG',
+    'fr': 'fr-FR',
+    'it': 'it-IT',
+    'ru': 'ru-RU'
+  }
+  const locale = localeMap[currentLocale] || 'en-US'
+  const month = date.toLocaleDateString(locale, { month: 'short' })
+  const day = date.getDate()
+  const year = date.getFullYear()
+  return `${t('apartments.details.available')} ${month} ${day}, ${year}`
 })
 
 const listedDate = computed(() => {
@@ -343,13 +435,13 @@ const sendInquiry = async () => {
     })
 
     if (result) {
-      uiStore.showSuccess('Message sent successfully!')
+      uiStore.showSuccess(t('contact.success'))
       messageContent.value = ''
     } else {
-      uiStore.showError(messageStore.error || 'Failed to send message')
+      uiStore.showError(messageStore.error || t('contact.failed'))
     }
   } catch (error) {
-    uiStore.showError('Failed to send message')
+    uiStore.showError(t('contact.failed'))
   } finally {
     sendingMessage.value = false
   }

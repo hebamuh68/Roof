@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import i18n from '@/i18n'
 import type { Apartment } from '@/types'
 
 const { t } = useI18n()
@@ -34,21 +35,55 @@ const formattedPrice = computed(() => {
 const formattedDate = computed(() => {
   if (!props.apartment.start_date) return t('common.availableNow')
   const date = new Date(props.apartment.start_date)
-  return `${t('apartments.details.available')} ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+  const currentLocale = i18n.global.locale.value
+  const localeMap: Record<string, string> = {
+    'en': 'en-US',
+    'ar': 'ar-EG',
+    'fr': 'fr-FR',
+    'it': 'it-IT',
+    'ru': 'ru-RU'
+  }
+  const locale = localeMap[currentLocale] || 'en-US'
+  const month = date.toLocaleDateString(locale, { month: 'short' })
+  const day = date.getDate()
+  return `${t('apartments.details.available')} ${month} ${day}`
 })
 
 const apartmentTypeLabel = computed(() => {
-  const types: Record<string, string> = {
-    studio: t('common.studio'),
-    '1bhk': '1 BHK',
-    '2bhk': '2 BHK',
-    '3bhk': '3 BHK',
-    '4bhk': '4 BHK',
-    villa: t('common.villa'),
-    penthouse: t('common.penthouse')
-  }
-  return types[props.apartment.apartment_type] || props.apartment.apartment_type
+  if (!props.apartment.apartment_type) return ''
+  const type = props.apartment.apartment_type.toLowerCase()
+  const translationKey = `common.${type}`
+  const translated = t(translationKey)
+  return translated !== translationKey ? translated : props.apartment.apartment_type
 })
+
+const translateKeyword = (keyword: string) => {
+  const normalized = keyword.toLowerCase().trim()
+  // Handle special cases with numbers/symbols and multi-word keywords
+  let key = normalized.replace(/\s+/g, '') // Remove spaces for camelCase
+  if (normalized === '24/7' || normalized === '24-7') {
+    key = 'twentyFourSeven'
+  } else if (normalized === 'cctv') {
+    key = 'cctv'
+  } else if (normalized === 'ac' || normalized === 'a/c') {
+    key = 'ac'
+  } else if (normalized === 'student friendly' || normalized === 'studentfriendly') {
+    key = 'studentFriendly'
+  } else if (normalized === 'study area' || normalized === 'studyarea') {
+    key = 'studyArea'
+  } else if (normalized === 'near metro' || normalized === 'nearmetro') {
+    key = 'nearMetro'
+  } else if (normalized.includes(' ')) {
+    // Convert multi-word to camelCase: "ready to move" -> "readyToMove"
+    key = normalized.split(' ').map((word, index) => 
+      index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)
+    ).join('')
+  }
+  
+  const translationKey = `common.${key}`
+  const translated = t(translationKey)
+  return translated !== translationKey ? translated : keyword
+}
 
 const handleClick = () => {
   emit('click', props.apartment)
@@ -140,7 +175,7 @@ const handleClick = () => {
           :key="keyword"
           class="px-2 py-0.5 bg-secondary-100 text-secondary-700 text-xs rounded-full"
         >
-          {{ keyword }}
+          {{ translateKeyword(keyword) }}
         </span>
         <span
           v-if="apartment.keywords && apartment.keywords.length > 3"

@@ -52,8 +52,8 @@
         <svg class="w-20 h-20 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
         </svg>
-        <h3 class="text-xl font-medium text-white mb-2">No notifications</h3>
-        <p class="text-gray-400">You're all caught up!</p>
+        <h3 class="text-xl font-medium text-white mb-2">{{ $t('notifications.noNotifications') }}</h3>
+        <p class="text-gray-400">{{ $t('common.youreAllCaughtUp') }}</p>
       </div>
 
       <!-- Notifications List -->
@@ -196,10 +196,10 @@ const formatTime = (dateStr: string) => {
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
 
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m`
-  if (diffHours < 24) return `${diffHours}h`
-  if (diffDays < 7) return `${diffDays}d`
+  if (diffMins < 1) return t('common.justNow')
+  if (diffMins < 60) return `${diffMins}${t('common.m')}`
+  if (diffHours < 24) return `${diffHours}${t('common.h')}`
+  if (diffDays < 7) return `${diffDays}${t('common.d')}`
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
