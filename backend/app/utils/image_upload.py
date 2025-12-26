@@ -8,8 +8,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Get upload directory from environment or use default
-UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "uploads"))
+# Get upload directory - should match the static files mount in main.py
+# Default to backend/static/images for consistency with static file serving
+BACKEND_DIR = Path(__file__).parent.parent.parent  # backend/
+UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", str(BACKEND_DIR / "static" / "images")))
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # Allowed image MIME types

@@ -66,3 +66,19 @@ class UserUpdate(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UserResponse(BaseModel):
+    """Response model for user data (excludes password, includes admin role)"""
+    id: int
+    first_name: str
+    last_name: str
+    email: EmailStr
+    location: str
+    flatmate_pref: Optional[List[str]] = None
+    keywords: Optional[List[str]] = None
+    role: str = Field(..., pattern=r"^(seeker|renter|admin|SEEKER|RENTER|ADMIN)$")
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

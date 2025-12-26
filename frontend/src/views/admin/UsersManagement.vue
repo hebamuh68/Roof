@@ -199,9 +199,9 @@ const roleFilters = computed(() => [
 const filteredUsers = computed(() => {
   let result = users.value
 
-  // Filter by role
+  // Filter by role (case-insensitive comparison)
   if (activeRole.value !== 'all') {
-    result = result.filter((u) => u.role === activeRole.value)
+    result = result.filter((u) => u.role?.toLowerCase() === activeRole.value.toLowerCase())
   }
 
   // Filter by search
@@ -223,7 +223,7 @@ const getInitials = (user: User) => {
 }
 
 const getRoleClass = (role: string) => {
-  switch (role) {
+  switch (role?.toLowerCase()) {
     case 'admin':
       return 'bg-orange-500 bg-opacity-20 text-orange-300'
     case 'renter':

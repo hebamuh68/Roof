@@ -30,7 +30,8 @@
       <div
         v-if="isOpen"
         :class="[
-          'absolute right-0 mt-2 w-48 rounded-xl shadow-lg border py-2 z-50',
+          'absolute mt-2 w-48 rounded-xl shadow-lg border py-2 z-50',
+          isRTL ? 'left-0' : 'right-0',
           isHomePage
             ? 'bg-gray-900 border-gray-700'
             : 'bg-white border-gray-100'
@@ -47,7 +48,7 @@
                 ? 'bg-white/20 text-white'
                 : 'text-gray-300 hover:bg-white/10 hover:text-white'
               : currentLanguage.code === lang.code
-                ? 'bg-green-50 text-green-600'
+                ? 'bg-green-50 text-green'
                 : 'text-gray-700 hover:bg-gray-50'
           ]"
         >
@@ -76,6 +77,7 @@ const languageStore = useLanguageStore()
 
 const isOpen = ref(false)
 const isHomePage = computed(() => route.name === 'home')
+const isRTL = computed(() => languageStore.getCurrentLanguage().dir === 'rtl')
 
 const currentLanguage = computed(() => languageStore.getCurrentLanguage())
 const supportedLanguages = computed(() => languageStore.supportedLanguages)
