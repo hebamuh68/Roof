@@ -145,8 +145,8 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  const isAdmin = userRole === 'admin'
-  const isRenter = userRole === 'renter' || userRole === 'admin' // Admin can also access renter pages
+  const isAdmin = userRole.toLowerCase() === 'admin'
+  const isRenter = userRole.toLowerCase() === 'renter' || isAdmin // Admin can also access renter pages
 
   // Check if route requires auth
   if (to.meta.requiresAuth && !isAuthenticated) {

@@ -26,8 +26,7 @@ async def get_all_users(
     if current_user.role != UserType.ADMIN:
         raise HTTPException(status_code=403, detail="You don't have permission for this action")
 
-    # TODO: create the list_all_users function in user_service.py
-    users = user_service.list_all_users(db, skip=skip, limit=limit) 
+    users = user_service.list_all_users(db, skip=skip, limit=limit)
     return users
 
 
@@ -41,15 +40,13 @@ async def delete_user(
     Delete a user. Admin access required.
     """
 
-    # TODO: create the get_user_by_id function in user_service.py
-    user = user_service.get_user_by_id(user_id)
+    user = user_service.get_user_by_id(db, user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="User with ID {user_id} not found")
+        raise HTTPException(status_code=404, detail=f"User with ID {user_id} not found")
     
     if current_user.role != UserType.ADMIN:
         raise HTTPException(status_code=403, detail="You don't have permission for this action")
 
-    # TODO: create the delete_user function in user_service.py
     result = user_service.delete_user(db, user_id)
     if not result:
         raise HTTPException(status_code=304, detail="User deletion failed")
@@ -64,7 +61,7 @@ async def get_platform_stats(
 ):
     """Get platform statistics (admin only)."""
     from sqlalchemy import func
-    from app.schemas.apartment_sql import ApartmentDB
+    from app.schemas.apartment_sql import ApartmentDB, ApartmentStatus
 
     if current_user.role != UserType.ADMIN:
         raise HTTPException(status_code=403, detail="You don't have permission for this action")
@@ -74,12 +71,35 @@ async def get_platform_stats(
     active_apartments = db.query(func.count(ApartmentDB.id))\
         .filter(ApartmentDB.is_active == True).scalar()
 
+    seekers_count = db.query(func.count(UserDB.id))\
+        .filter(UserDB.role == UserType.SEEKER).scalar()
+    renters_count = db.query(func.count(UserDB.id))\
+        .filter(UserDB.role == UserType.RENTER).scalar()
+    admins_count = db.query(func.count(UserDB.id))\
+        .filter(UserDB.role == UserType.ADMIN).scalar()
+
+    # Get apartment counts by status
+    draft_count = db.query(func.count(ApartmentDB.id))\
+        .filter(ApartmentDB.status == ApartmentStatus.DRAFT).scalar()
+    published_count = db.query(func.count(ApartmentDB.id))\
+        .filter(ApartmentDB.status == ApartmentStatus.PUBLISHED).scalar()
+    archived_count = db.query(func.count(ApartmentDB.id))\
+        .filter(ApartmentDB.status == ApartmentStatus.ARCHIVED).scalar()
+
     return {
         "total_users": total_users,
         "total_apartments": total_apartments,
         "active_apartments": active_apartments,
-        "seekers": db.query(func.count(UserDB.id))\
-            .filter(UserDB.role == UserType.SEEKER).scalar(),
-        "renters": db.query(func.count(UserDB.id))\
-            .filter(UserDB.role == UserType.RENTER).scalar(),
+        "seekers": seekers_count,
+        "renters": renters_count,
+        "users_by_role": {
+            "seeker": seekers_count,
+            "renter": renters_count,
+            "admin": admins_count
+        },
+        "apartments_by_status": {
+            "draft": draft_count,
+            "published": published_count,
+            "archived": archived_count
+        }
     }

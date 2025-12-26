@@ -61,6 +61,27 @@ def require_renter(current_user: UserDB = Depends(get_current_user)) -> UserDB:
     return current_user
 
 
+def require_renter_or_admin(current_user: UserDB = Depends(get_current_user)) -> UserDB:
+    """
+    Dependency to ensure user is a RENTER or ADMIN.
+    Admins have full access to all renter operations.
+
+    Usage:
+        @router.post("/apartments")
+        async def create_apartment(
+            current_user: UserDB = Depends(require_renter_or_admin),
+            db: Session = Depends(get_db)
+        ):
+            ...
+    """
+    if current_user.role not in (UserType.RENTER, UserType.ADMIN):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only renters or admins can perform this action"
+        )
+    return current_user
+
+
 def require_admin(current_user: UserDB = Depends(get_current_user)) -> UserDB:
     """
     Dependency to ensure user is an ADMIN.

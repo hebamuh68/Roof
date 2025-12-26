@@ -2,19 +2,19 @@
   <nav :class="navbarClasses">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16 items-center">
-        <!-- Left section -->
+        <!-- Logo section -->
         <div class="flex items-center gap-8">
           <!-- Logo -->
-          <router-link to="/" class="flex items-center space-x-2 cursor-pointer">
+          <router-link to="/" class="flex items-center gap-2 cursor-pointer">
             <img
               :src="logoImage"
               alt="Logo"
-              class=" w-10 object-contain"
+              class="w-10 object-contain"
             />
           </router-link>
 
           <!-- Navigation Links - Desktop -->
-          <div class="hidden md:flex space-x-12">
+          <div class="hidden md:flex items-center gap-8">
             <router-link
               v-for="item in navLinks"
               :key="item.name"
@@ -23,11 +23,11 @@
                 isActive(item.route)
                   ? isHomePage
                     ? 'text-white border-b-2 border-white'
-                    : 'text-black border-b-2 border-green-500'
+                    : 'text-white border-b-2 border-green-500'
                   : isHomePage
                     ? 'text-white hover:text-gray-200'
                     : 'text-gray-500 hover:text-gray-900',
-                'pb-1 text-sm font-medium'
+                'pb-1 text-sm font-medium whitespace-nowrap'
               ]"
             >
               {{ item.name }}
@@ -35,8 +35,8 @@
           </div>
         </div>
 
-        <!-- Right section -->
-        <div class="flex items-center space-x-4">
+        <!-- Actions section -->
+        <div class="flex items-center gap-4">
           <!-- Language Switcher -->
           <LanguageSwitcher />
 
@@ -62,7 +62,10 @@
               </svg>
               <span
                 v-if="unreadNotifications > 0"
-                class="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center text-xs font-bold text-white rounded-full"
+                :class="[
+                  'absolute -top-1 w-5 h-5 flex items-center justify-center text-xs font-bold text-white rounded-full',
+                  isRTL ? '-left-1' : '-right-1'
+                ]"
                 style="background: linear-gradient(90deg, #4BC974 0%, #00A060 100%);"
               >
                 {{ unreadNotifications > 9 ? '9+' : unreadNotifications }}
@@ -82,7 +85,10 @@
               </svg>
               <span
                 v-if="unreadMessages > 0"
-                class="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center text-xs font-bold text-white rounded-full"
+                :class="[
+                  'absolute -top-1 w-5 h-5 flex items-center justify-center text-xs font-bold text-white rounded-full',
+                  isRTL ? '-left-1' : '-right-1'
+                ]"
                 style="background: linear-gradient(90deg, #4BC974 0%, #00A060 100%);"
               >
                 {{ unreadMessages > 9 ? '9+' : unreadMessages }}
@@ -120,7 +126,10 @@
               >
                 <div
                   v-if="isUserMenuOpen"
-                  class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50"
+                  :class="[
+                    'absolute mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50',
+                    isRTL ? 'left-0' : 'right-0'
+                  ]"
                 >
                   <div class="px-4 py-2 border-b border-gray-100">
                     <p class="text-sm font-medium text-gray-900">{{ user?.first_name }} {{ user?.last_name }}</p>
@@ -180,17 +189,17 @@
 
           <!-- Guest Auth Links - Hidden on mobile -->
           <template v-else>
-            <div class="hidden sm:flex items-center space-x-4">
+            <div class="hidden sm:flex items-center gap-4">
               <!-- Login -->
               <router-link to="/login" :class="[
-                'p-2 rounded-full',
+                'p-2 rounded-full whitespace-nowrap',
                 isHomePage ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-700'
               ]">
                 {{ $t('nav.login') }}
               </router-link>
               <!-- Signup -->
               <router-link to="/signup" :class="[
-                'p-2 rounded-full',
+                'p-2 rounded-full whitespace-nowrap',
                 isHomePage ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-700'
               ]">
                 {{ $t('nav.signup') }}
@@ -232,7 +241,10 @@
     <!-- Mobile menu -->
     <div
       v-if="isMobileMenuOpen"
-      class="md:hidden fixed top-0 right-0 z-50 w-80 h-full bg-gradient-to-br from-gray-900 via-gray-800 to-black backdrop-blur-xl border-l border-white border-opacity-10 transform transition-transform duration-300 ease-in-out"
+      :class="[
+        'md:hidden fixed top-0 z-50 w-80 h-full bg-gradient-to-br from-gray-900 via-gray-800 to-black backdrop-blur-xl border-white border-opacity-10 transform transition-transform duration-300 ease-in-out',
+        isRTL ? 'left-0 border-r' : 'right-0 border-l'
+      ]"
     >
       <!-- Background pattern overlay -->
       <div class="absolute inset-0 opacity-10">
@@ -405,6 +417,7 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
 import { useMessageStore } from '@/stores/message'
+import { useLanguageStore } from '@/stores/language'
 import SearchInput from '../inputs/SearchInput.vue'
 import HamburgerIcon from '../icons/menu/HamburgerIcon.vue'
 import LanguageSwitcher from './LanguageSwitcher.vue'
@@ -418,6 +431,7 @@ const { t } = useI18n()
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 const messageStore = useMessageStore()
+const languageStore = useLanguageStore()
 
 // ============================== Refs ==============================
 const searchQuery = ref('')
@@ -440,6 +454,7 @@ const isAboutPage = computed(() => route.name === 'about')
 const isContactPage = computed(() => route.name === 'contact')
 const isLoginPage = computed(() => route.name === 'login')
 const isSignupPage = computed(() => route.name === 'signup')
+const isRTL = computed(() => languageStore.getCurrentLanguage().dir === 'rtl')
 
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const user = computed(() => authStore.user)
@@ -454,10 +469,7 @@ const unreadNotifications = computed(() => notificationStore.unreadCount)
 const unreadMessages = computed(() => messageStore.unreadCount)
 
 const navbarClasses = computed(() => {
-  if (isHomePage.value || isApartmentsPage.value || isPutAnAdPage.value || isAboutPage.value || isContactPage.value || isLoginPage.value || isSignupPage.value) {
     return 'absolute top-0 left-0 right-0 z-50 bg-transparent'
-  }
-  return 'bg-white shadow-sm'
 })
 
 // ============================== Methods ==============================

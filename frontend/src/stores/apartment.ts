@@ -102,7 +102,7 @@ export const useApartmentStore = defineStore('apartment', () => {
       })
       if (status) params.append('status', status)
 
-      const response = await api.get(`/apartments/my-apartments?${params}`)
+      const response = await api.get(`/my-apartments?${params}`)
       myApartments.value = response.data.apartments || response.data
       return true
     } catch (err: any) {
@@ -116,7 +116,7 @@ export const useApartmentStore = defineStore('apartment', () => {
   // Fetch my apartments analytics
   const fetchMyApartmentsAnalytics = async (): Promise<any> => {
     try {
-      const response = await api.get('/apartments/my-apartments/analytics')
+      const response = await api.get('/my-apartments/analytics')
       return response.data
     } catch (err) {
       return null

@@ -14,9 +14,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Getters
   const isAuthenticated = computed(() => !!accessToken.value && !!user.value)
-  const isAdmin = computed(() => user.value?.role === 'admin')
-  const isRenter = computed(() => user.value?.role === 'renter')
-  const isSeeker = computed(() => user.value?.role === 'seeker')
+  const isAdmin = computed(() => user.value?.role?.toLowerCase() === 'admin')
+  const isRenter = computed(() => user.value?.role?.toLowerCase() === 'renter')
+  const isSeeker = computed(() => user.value?.role?.toLowerCase() === 'seeker')
   const fullName = computed(() =>
     user.value ? `${user.value.first_name} ${user.value.last_name}` : ''
   )

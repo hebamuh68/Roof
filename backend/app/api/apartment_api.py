@@ -22,7 +22,7 @@ from app.schemas.user_sql import UserDB, UserType
 from app.middleware.auth_middleware import get_current_user
 from app.utils.apartments_utils import verify_apartment_ownership
 from app.schemas.apartment_sql import ApartmentDB
-from app.utils.rbac import require_renter
+from app.utils.rbac import require_renter, require_renter_or_admin
 
 router = APIRouter()
 
@@ -68,13 +68,13 @@ async def create_apartment(
     parking_type: str = Form(..., description="Parking availability (Private, Street, Garage, None)"),
     keywords: str = Form(None, description="Comma-separated amenities/keywords"),
     is_active: bool = Form(True, description="Apartment active status"),
-    current_user: UserDB = Depends(require_renter),
+    current_user: UserDB = Depends(require_renter_or_admin),
     db: Session = Depends(get_db)
 ):
     """
     Create a new apartment listing.
 
-    Requires authentication. The apartment is automatically assigned to the current user.
+    Requires authentication (renter or admin role). The apartment is automatically assigned to the current user.
     Uploads and validates at least 4 images. Images must be in JPG, PNG, or WebP format.
 
     Args:
@@ -124,43 +124,6 @@ async def create_apartment(
         apartment_input=apartment_input,
         images=images
     )
-
-
-@router.get("/apartments/{apartment_id}", response_model=ApartmentResponse)
-def get_apartment_by_id(
-    apartment_id: int,
-    track_view: bool = True,
-    db: Session = Depends(get_db)
-):
-    """
-    Retrieve a specific apartment by ID and increment view count.
-
-    Public endpoint - no authentication required.
-    Set track_view=false to get details without incrementing counter.
-
-    Args:
-        apartment_id: Unique apartment identifier
-        track_view: Whether to track this view (default: True)
-        db: Database session (injected)
-
-    Returns:
-        ApartmentResponse: Apartment details
-
-    Raises:
-        HTTPException 404: Apartment not found
-    """
-    if track_view:
-        apartment = apartment_service.increment_view_count(db, apartment_id)
-    else:
-        apartment = apartment_service.get_apartment_by_id(db, apartment_id)
-
-    if not apartment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Apartment with ID {apartment_id} not found"
-        )
-
-    return apartment
 
 
 @router.get("/apartments", response_model=dict)
@@ -237,6 +200,43 @@ def get_popular_apartments(
     """
     apartments = apartment_service.get_popular_apartments(db, limit)
     return [ApartmentResponse.model_validate(apt) for apt in apartments]
+
+
+@router.get("/apartments/{apartment_id}", response_model=ApartmentResponse)
+def get_apartment_by_id(
+    apartment_id: int,
+    track_view: bool = True,
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieve a specific apartment by ID and increment view count.
+
+    Public endpoint - no authentication required.
+    Set track_view=false to get details without incrementing counter.
+
+    Args:
+        apartment_id: Unique apartment identifier
+        track_view: Whether to track this view (default: True)
+        db: Database session (injected)
+
+    Returns:
+        ApartmentResponse: Apartment details
+
+    Raises:
+        HTTPException 404: Apartment not found
+    """
+    if track_view:
+        apartment = apartment_service.increment_view_count(db, apartment_id)
+    else:
+        apartment = apartment_service.get_apartment_by_id(db, apartment_id)
+
+    if not apartment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Apartment with ID {apartment_id} not found"
+        )
+
+    return apartment
 
 
 @router.put("/apartments/{apartment_id}", response_model=ApartmentResponse)
@@ -346,7 +346,7 @@ def delete_apartment(
 @router.post("/{apartment_id}/publish", response_model=ApartmentResponse)
 async def publish_apartment(
     apartment_id: int,
-    current_user: UserDB = Depends(require_renter),
+    current_user: UserDB = Depends(require_renter_or_admin),
     db: Session = Depends(get_db)
 ):
     """Publish a draft apartment."""
@@ -354,7 +354,9 @@ async def publish_apartment(
     if not apartment:
         raise HTTPException(status_code=404, detail="Apartment not found")
 
-    verify_apartment_ownership(apartment, current_user.id)
+    # Verify ownership (skip for admins)
+    if current_user.role != UserType.ADMIN:
+        verify_apartment_ownership(apartment, current_user.id)
 
     if apartment.status == ApartmentStatus.PUBLISHED:
         raise HTTPException(status_code=400, detail="Apartment is already published")
@@ -366,7 +368,7 @@ async def publish_apartment(
 @router.post("/{apartment_id}/archive", response_model=ApartmentResponse)
 async def archive_apartment(
     apartment_id: int,
-    current_user: UserDB = Depends(require_renter),
+    current_user: UserDB = Depends(require_renter_or_admin),
     db: Session = Depends(get_db)
 ):
     """Archive a published apartment."""
@@ -374,7 +376,9 @@ async def archive_apartment(
     if not apartment:
         raise HTTPException(status_code=404, detail="Apartment not found")
 
-    verify_apartment_ownership(apartment, current_user.id)
+    # Verify ownership (skip for admins)
+    if current_user.role != UserType.ADMIN:
+        verify_apartment_ownership(apartment, current_user.id)
 
     updated = apartment_service.archive_apartment(db, apartment_id)
     return ApartmentResponse.model_validate(updated)
@@ -477,7 +481,7 @@ async def get_my_apartments_analytics(
 async def feature_apartment_endpoint(
     apartment_id: int,
     featured_request: FeaturedRequest,
-    current_user: UserDB = Depends(require_renter),
+    current_user: UserDB = Depends(require_renter_or_admin),
     db: Session = Depends(get_db)
 ):
     """
@@ -502,7 +506,9 @@ async def feature_apartment_endpoint(
     if not apartment:
         raise HTTPException(status_code=404, detail="Apartment not found")
 
-    verify_apartment_ownership(apartment, current_user.id)
+    # Verify ownership (skip for admins)
+    if current_user.role != UserType.ADMIN:
+        verify_apartment_ownership(apartment, current_user.id)
 
     # In production, you might want to check payment here
     # or restrict this to admin users only
@@ -520,7 +526,7 @@ async def feature_apartment_endpoint(
 @router.delete("/{apartment_id}/feature", response_model=ApartmentResponse)
 async def unfeature_apartment_endpoint(
     apartment_id: int,
-    current_user: UserDB = Depends(require_renter),
+    current_user: UserDB = Depends(require_renter_or_admin),
     db: Session = Depends(get_db)
 ):
     """
@@ -543,7 +549,9 @@ async def unfeature_apartment_endpoint(
     if not apartment:
         raise HTTPException(status_code=404, detail="Apartment not found")
 
-    verify_apartment_ownership(apartment, current_user.id)
+    # Verify ownership (skip for admins)
+    if current_user.role != UserType.ADMIN:
+        verify_apartment_ownership(apartment, current_user.id)
 
     updated = apartment_service.unfeature_apartment(db, apartment_id)
     return ApartmentResponse.model_validate(updated)
@@ -577,12 +585,12 @@ async def get_featured_apartments_endpoint(
 @router.post("/{apartment_id}/duplicate", response_model=ApartmentResponse)
 async def duplicate_apartment_endpoint(
     apartment_id: int,
-    current_user: UserDB = Depends(get_current_user),
+    current_user: UserDB = Depends(require_renter_or_admin),
     db: Session = Depends(get_db)
 ):
     """
     Create a duplicate copy of an apartment.
-    User must own the original apartment to duplicate it.
+    User must own the original apartment to duplicate it (admins can duplicate any).
     The duplicate is created as a DRAFT.
 
     Args:
@@ -603,8 +611,9 @@ async def duplicate_apartment_endpoint(
     if not original:
         raise HTTPException(status_code=404, detail="Apartment not found")
 
-    # Verify ownership
-    verify_apartment_ownership(original, current_user.id)
+    # Verify ownership (skip for admins)
+    if current_user.role != UserType.ADMIN:
+        verify_apartment_ownership(original, current_user.id)
 
     # Create duplicate
     duplicate = apartment_service.duplicate_apartment(db, apartment_id, current_user.id)
@@ -618,7 +627,7 @@ async def duplicate_apartment_endpoint(
 @router.post("/bulk-operation", response_model=BulkOperationResponse)
 async def bulk_apartment_operation(
     bulk_request: BulkOperationRequest,
-    current_user: UserDB = Depends(require_renter),
+    current_user: UserDB = Depends(require_renter_or_admin),
     db: Session = Depends(get_db)
 ):
     """
