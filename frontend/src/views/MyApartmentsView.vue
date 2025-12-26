@@ -285,7 +285,7 @@ const getStatusLabel = (status: string) => {
     case 'archived':
       return t('common.archived')
     default:
-      return status.charAt(0).toUpperCase() + status.slice(1)
+  return status.charAt(0).toUpperCase() + status.slice(1)
   }
 }
 

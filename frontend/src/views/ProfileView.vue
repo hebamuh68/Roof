@@ -272,12 +272,12 @@ const handleSubmit = async () => {
     })
 
     if (result) {
-      success.value = 'Profile updated successfully!'
+      success.value = t('common.profileUpdated')
     } else {
-      error.value = authStore.error || 'Failed to update profile'
+      error.value = authStore.error || t('common.failedUpdateProfile')
     }
   } catch (err: any) {
-    error.value = err.message || 'Something went wrong'
+    error.value = err.message || t('common.somethingWentWrong')
   } finally {
     saving.value = false
   }

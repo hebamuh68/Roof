@@ -21,10 +21,10 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
               </svg>
             </div>
-            <span class="text-xs text-gray-400">Total</span>
+            <span class="text-xs text-gray-400">{{ $t('common.total') }}</span>
           </div>
           <div class="text-3xl font-bold text-white mb-1">{{ stats.total_users }}</div>
-          <div class="text-sm text-gray-400">Users</div>
+          <div class="text-sm text-gray-400">{{ $t('common.users') }}</div>
         </div>
 
         <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-10">
@@ -34,10 +34,10 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
               </svg>
             </div>
-            <span class="text-xs text-gray-400">Total</span>
+            <span class="text-xs text-gray-400">{{ $t('common.total') }}</span>
           </div>
           <div class="text-3xl font-bold text-white mb-1">{{ stats.total_apartments }}</div>
-          <div class="text-sm text-gray-400">Apartments</div>
+          <div class="text-sm text-gray-400">{{ $t('common.apartments') }}</div>
         </div>
 
         <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-10">
@@ -47,10 +47,10 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
             </div>
-            <span class="text-xs text-gray-400">Active</span>
+            <span class="text-xs text-gray-400">{{ $t('common.active') }}</span>
           </div>
           <div class="text-3xl font-bold text-white mb-1">{{ stats.active_apartments }}</div>
-          <div class="text-sm text-gray-400">Active Listings</div>
+          <div class="text-sm text-gray-400">{{ $t('common.activeListings') }}</div>
         </div>
 
         <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-10">
@@ -60,10 +60,10 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
               </svg>
             </div>
-            <span class="text-xs text-gray-400">Seekers</span>
+            <span class="text-xs text-gray-400">{{ $t('common.seekers') }}</span>
           </div>
           <div class="text-3xl font-bold text-white mb-1">{{ stats.seekers || stats.users_by_role?.seeker || 0 }}</div>
-          <div class="text-sm text-gray-400">Seekers</div>
+          <div class="text-sm text-gray-400">{{ $t('common.seekers') }}</div>
         </div>
       </div>
 
@@ -116,7 +116,7 @@
 
       <!-- Quick Actions -->
       <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-10">
-        <h3 class="text-lg font-semibold text-white mb-4">Quick Actions</h3>
+        <h3 class="text-lg font-semibold text-white mb-4">{{ $t('admin.users.manageUsers') }}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <router-link
             to="/admin/users"
@@ -128,8 +128,8 @@
               </svg>
             </div>
             <div>
-              <div class="font-medium text-white">Manage Users</div>
-              <div class="text-sm text-gray-400">View and manage all users</div>
+              <div class="font-medium text-white">{{ $t('admin.users.manageUsers') }}</div>
+              <div class="text-sm text-gray-400">{{ $t('common.viewManageUsers') }}</div>
             </div>
           </router-link>
 

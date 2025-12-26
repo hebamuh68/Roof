@@ -39,7 +39,7 @@
                 v-model="form.email"
                 type="email"
                 required
-                placeholder="you@example.com"
+                :placeholder="$t('contact.emailPlaceholder')"
                 class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary-500 transition-all"
               />
             </div>
