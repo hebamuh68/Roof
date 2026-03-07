@@ -45,7 +45,7 @@ fi
 
 # Create database
 echo "🗄️  Setting up database..."
-createdb roof_db 2>/dev/null || echo "Database roof_db already exists"
+createdb roof 2>/dev/null || echo "Database roof already exists"
 
 # Set up Python virtual environment
 echo "🐍 Setting up Python environment..."
@@ -64,7 +64,7 @@ echo "⚙️  Setting up environment configuration..."
 if [ ! -f "backend/.env" ]; then
     cp backend/env.example backend/.env
     # Update database URL for Mac
-    sed -i '' 's/DATABASE_URL=postgresql:\/\/username:password@localhost:5432\/database_name/DATABASE_URL=postgresql:\/\/'$(whoami)'@localhost:5432\/roof_db/' backend/.env
+    sed -i '' 's/DATABASE_URL=postgresql:\/\/username:password@localhost:5432\/database_name/DATABASE_URL=postgresql:\/\/'$(whoami)'@localhost:5432\/roof/' backend/.env
     sed -i '' 's/ELASTIC_URL=https:\/\/localhost:9200/ELASTIC_URL=http:\/\/localhost:9200/' backend/.env
     echo "✅ Environment file created and configured"
 else

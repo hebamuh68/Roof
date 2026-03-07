@@ -71,22 +71,22 @@
       <!-- Stats Section -->
       <div class="bg-white bg-opacity-5 backdrop-blur-sm rounded-2xl p-8 border border-white border-opacity-10 mb-8">
         <h2 class="text-heading-2 text-white text-center mb-8">{{ $t('about.byNumbers') }}</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div>
-            <div class="text-3xl sm:text-4xl font-bold text-white mb-2">1000+</div>
-            <div class="text-gray-400">{{ $t('about.activeListings') }}</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-center">
+          <div class="flex flex-col items-center justify-center">
+            <div class="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-3 leading-none">1000</div>
+            <div class="text-sm sm:text-base text-gray-400">{{ $t('about.activeListings') }}</div>
           </div>
-          <div>
-            <div class="text-3xl sm:text-4xl font-bold text-white mb-2">5000+</div>
-            <div class="text-gray-400">{{ $t('about.happyUsers') }}</div>
+          <div class="flex flex-col items-center justify-center">
+            <div class="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-3 leading-none">5000</div>
+            <div class="text-sm sm:text-base text-gray-400">{{ $t('about.happyUsers') }}</div>
           </div>
-          <div>
-            <div class="text-3xl sm:text-4xl font-bold text-white mb-2">50+</div>
-            <div class="text-gray-400">{{ $t('about.citiesCovered') }}</div>
+          <div class="flex flex-col items-center justify-center">
+            <div class="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-3 leading-none">50+</div>
+            <div class="text-sm sm:text-base text-gray-400">{{ $t('about.citiesCovered') }}</div>
           </div>
-          <div>
-            <div class="text-3xl sm:text-4xl font-bold text-white mb-2">98%</div>
-            <div class="text-gray-400">{{ $t('about.satisfactionRate') }}</div>
+          <div class="flex flex-col items-center justify-center">
+            <div class="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-3 leading-none">98%</div>
+            <div class="text-sm sm:text-base text-gray-400">{{ $t('about.satisfactionRate') }}</div>
           </div>
         </div>
       </div>
@@ -97,9 +97,6 @@
         <p class="text-body text-gray-400 max-w-2xl mx-auto mb-8">
           {{ $t('about.builtWithCareText') }}
         </p>
-        <router-link to="/contact">
-          <BaseButton :label="$t('about.getInTouch')" variant="primary" size="md" />
-        </router-link>
       </div>
     </div>
   </div>

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roof — Logical Database Design (Current)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1e1e2e;
+            min-height: 100vh;
+            overflow: auto;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        .title-bar {
+            background: #181825;
+            color: #cdd6f4;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #313244;
+        }
+        .title-bar span { color: #6c7086; font-weight: 400; font-size: 0.85rem; margin-left: 12px; }
+        svg { display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <div class="title-bar">
+        Roof — Logical Database Design
+        <span>Current Implementation &bull; PostgreSQL</span>
+    </div>
+    <svg id="diagram" xmlns="http://www.w3.org/2000/svg"></svg>
+
+    <script>
+    const SVG_NS = "http://www.w3.org/2000/svg";
+
+    const C = {
+        bg: "#1e1e2e",
+        tableBg: "#181825",
+        tableBorder: "#45475a",
+        tableHeader: "#1e1e2e",
+        headerText: "#cdd6f4",
+        colText: "#bac2de",
+        typeText: "#6c7086",
+        pkColor: "#f9e2af",
+        fkColor: "#f38ba8",
+        pfkColor: "#89dceb",
+        lineColor: "#f38ba8",
+        lineColorId: "#89dceb",
+        uniqueColor: "#cba6f7",
+    };
+
+    function el(tag, attrs = {}) {
+        const e = document.createElementNS(SVG_NS, tag);
+        for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+        return e;
+    }
+
+    function drawTable(svg, x, y, name, columns) {
+        const colH = 26;
+        const headerH = 36;
+        const padX = 14;
+        const nameW = Math.max(...columns.map(c => c.name.length), name.length) * 8 + 60;
+        const typeW = 100;
+        const w = Math.max(nameW + typeW, 260);
+        const h = headerH + columns.length * colH + 6;
+
+        svg.appendChild(el("rect", {
+            x: x + 2, y: y + 2, width: w, height: h, rx: 6,
+            fill: "rgba(0,0,0,0.3)"
+        }));
+        svg.appendChild(el("rect", {
+            x, y, width: w, height: h, rx: 6,
+            fill: C.tableBg, stroke: C.tableBorder, "stroke-width": 1.5
+        }));
+        svg.appendChild(el("rect", {
+            x, y, width: w, height: headerH, rx: 6,
+            fill: C.tableHeader, stroke: C.tableBorder, "stroke-width": 1.5
+        }));
+        svg.appendChild(el("rect", {
+            x: x + 1, y: y + headerH - 8, width: w - 2, height: 9,
+            fill: C.tableHeader
+        }));
+        svg.appendChild(el("line", {
+            x1: x, y1: y + headerH, x2: x + w, y2: y + headerH,
+            stroke: C.tableBorder, "stroke-width": 1.5
+        }));
+
+        const ht = el("text", {
+            x: x + padX, y: y + headerH / 2 + 1,
+            "dominant-baseline": "middle",
+            fill: C.headerText, "font-size": "14", "font-weight": "700",
+            "font-family": "Segoe UI, sans-serif"
+        });
+        ht.textContent = name;
+        svg.appendChild(ht);
+
+        columns.forEach((col, i) => {
+            const cy = y + headerH + i * colH + colH / 2 + 2;
+
+            if (col.key) {
+                let keyColor = C.fkColor;
+                if (col.key === "PK") keyColor = C.pkColor;
+                else if (col.key === "PFK") keyColor = C.pfkColor;
+
+                const kx = x + 12, ky = cy;
+                svg.appendChild(el("circle", {
+                    cx: kx, cy: ky - 1, r: 4,
+                    fill: "none", stroke: keyColor, "stroke-width": 1.5
+                }));
+                svg.appendChild(el("line", {
+                    x1: kx, y1: ky + 3, x2: kx, y2: ky + 8,
+                    stroke: keyColor, "stroke-width": 1.5
+                }));
+                svg.appendChild(el("line", {
+                    x1: kx, y1: ky + 6, x2: kx + 3, y2: ky + 6,
+                    stroke: keyColor, "stroke-width": 1.2
+                }));
+            }
+
+            const ct = el("text", {
+                x: x + 28, y: cy,
+                "dominant-baseline": "middle",
+                fill: col.key === "PK" ? C.pkColor : (col.key === "FK" ? C.fkColor : (col.key === "PFK" ? C.pfkColor : C.colText)),
+                "font-size": "12",
+                "font-weight": col.key ? "600" : "400",
+                "font-family": "Consolas, 'Courier New', monospace"
+            });
+            ct.textContent = col.name;
+            svg.appendChild(ct);
+
+            const dt = el("text", {
+                x: x + w - padX, y: cy,
+                "text-anchor": "end",
+                "dominant-baseline": "middle",
+                fill: C.typeText, "font-size": "10.5",
+                "font-family": "Consolas, 'Courier New', monospace"
+            });
+            dt.textContent = col.type;
+            svg.appendChild(dt);
+
+            // Constraint badges
+            if (col.constraint) {
+                const bx = x + w - padX - col.type.length * 6.5 - 40;
+                svg.appendChild(el("rect", {
+                    x: bx - 2, y: cy - 8, width: 30, height: 16, rx: 3,
+                    fill: "rgba(203,166,247,0.15)", stroke: C.uniqueColor, "stroke-width": 0.8
+                }));
+                const bt = el("text", {
+                    x: bx + 13, y: cy, "text-anchor": "middle",
+                    "dominant-baseline": "middle",
+                    fill: C.uniqueColor, "font-size": "8.5", "font-weight": "600",
+                    "font-family": "Segoe UI, sans-serif"
+                });
+                bt.textContent = col.constraint;
+                svg.appendChild(bt);
+            }
+        });
+
+        return { x, y, w, h, name, headerH, colH, cols: columns };
+    }
+
+    function crowFootMany(svg, x, y, dir, color) {
+        const s = 10;
+        const c = color || C.lineColor;
+        let lines = [];
+        if (dir === 'left') lines = [[x,y,x-s,y-7],[x,y,x-s,y],[x,y,x-s,y+7]];
+        else if (dir === 'right') lines = [[x,y,x+s,y-7],[x,y,x+s,y],[x,y,x+s,y+7]];
+        else if (dir === 'up') lines = [[x,y,x-7,y-s],[x,y,x,y-s],[x,y,x+7,y-s]];
+        else lines = [[x,y,x-7,y+s],[x,y,x,y+s],[x,y,x+7,y+s]];
+        lines.forEach(([x1,y1,x2,y2]) => {
+            svg.appendChild(el("line", { x1,y1,x2,y2, stroke: c, "stroke-width": 2 }));
+        });
+    }
+
+    function crowFootOne(svg, x, y, dir, color) {
+        const s = 8, c = color || C.lineColor;
+        if (dir === 'left') svg.appendChild(el("line", { x1:x-s,y1:y-7,x2:x-s,y2:y+7, stroke:c, "stroke-width":2 }));
+        else if (dir === 'right') svg.appendChild(el("line", { x1:x+s,y1:y-7,x2:x+s,y2:y+7, stroke:c, "stroke-width":2 }));
+        else if (dir === 'up') svg.appendChild(el("line", { x1:x-7,y1:y-s,x2:x+7,y2:y-s, stroke:c, "stroke-width":2 }));
+        else svg.appendChild(el("line", { x1:x-7,y1:y+s,x2:x+7,y2:y+s, stroke:c, "stroke-width":2 }));
+    }
+
+    function drawDashedLine(svg, points, color) {
+        const c = color || C.lineColor;
+        for (let i = 0; i < points.length - 1; i++) {
+            svg.appendChild(el("line", {
+                x1: points[i][0], y1: points[i][1],
+                x2: points[i+1][0], y2: points[i+1][1],
+                stroke: c, "stroke-width": 2, "stroke-dasharray": "8,4"
+            }));
+        }
+    }
+
+    function tableRight(t, colIdx) {
+        return { x: t.x + t.w, y: t.y + t.headerH + colIdx * t.colH + t.colH / 2 + 2 };
+    }
+    function tableLeft(t, colIdx) {
+        return { x: t.x, y: t.y + t.headerH + colIdx * t.colH + t.colH / 2 + 2 };
+    }
+
+    // ══════════════════════════════════════
+    //  BUILD DIAGRAM — ACTUAL ROOF DATABASE
+    // ══════════════════════════════════════
+    const svg = document.getElementById("diagram");
+    const W = 1650, H = 1100;
+    svg.setAttribute("width", W);
+    svg.setAttribute("height", H);
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.appendChild(el("rect", { width: W, height: H, fill: C.bg }));
+
+    // ── USERS table (center) ──
+    const tUsers = drawTable(svg, 50, 350, "users", [
+        { name: "id", type: "SERIAL", key: "PK" },
+        { name: "first_name", type: "VARCHAR" },
+        { name: "last_name", type: "VARCHAR" },
+        { name: "email", type: "VARCHAR", constraint: "UQ" },
+        { name: "location", type: "VARCHAR" },
+        { name: "flatmate_pref", type: "VARCHAR[]" },
+        { name: "keywords", type: "VARCHAR[]" },
+        { name: "role", type: "ENUM(UserType)" },
+        { name: "hashed_password", type: "VARCHAR" },
+        { name: "created_at", type: "TIMESTAMP" },
+    ]);
+
+    // ── APARTMENTS table (top-right) ──
+    const tApts = drawTable(svg, 520, 30, "apartments", [
+        { name: "id", type: "SERIAL", key: "PK" },
+        { name: "renter_id", type: "INTEGER", key: "FK" },
+        { name: "status", type: "ENUM(Status)" },
+        { name: "images", type: "VARCHAR[]" },
+        { name: "title", type: "VARCHAR" },
+        { name: "description", type: "TEXT" },
+        { name: "location", type: "VARCHAR" },
+        { name: "apartment_type", type: "VARCHAR" },
+        { name: "rent_per_week", type: "INTEGER" },
+        { name: "start_date", type: "TIMESTAMP" },
+        { name: "duration_len", type: "INTEGER" },
+        { name: "place_accept", type: "VARCHAR" },
+        { name: "furnishing_type", type: "VARCHAR" },
+        { name: "is_pathroom_solo", type: "BOOLEAN" },
+        { name: "parking_type", type: "VARCHAR" },
+        { name: "keywords", type: "VARCHAR[]" },
+        { name: "is_active", type: "BOOLEAN" },
+        { name: "view_count", type: "INTEGER" },
+        { name: "last_viewed_at", type: "TIMESTAMP" },
+        { name: "is_featured", type: "BOOLEAN" },
+        { name: "featured_until", type: "TIMESTAMP" },
+        { name: "featured_priority", type: "INTEGER" },
+        { name: "created_at", type: "TIMESTAMP" },
+        { name: "updated_at", type: "TIMESTAMP" },
+    ]);
+
+    // ── MESSAGES table (right) ──
+    const tMsgs = drawTable(svg, 520, 700, "messages", [
+        { name: "id", type: "SERIAL", key: "PK" },
+        { name: "sender_id", type: "INTEGER", key: "FK" },
+        { name: "receiver_id", type: "INTEGER", key: "FK" },
+        { name: "content", type: "TEXT" },
+        { name: "created_at", type: "TIMESTAMP" },
+        { name: "updated_at", type: "TIMESTAMP" },
+    ]);
+
+    // ── NOTIFICATIONS table (bottom-right) ──
+    const tNotif = drawTable(svg, 1050, 700, "notifications", [
+        { name: "id", type: "SERIAL", key: "PK" },
+        { name: "user_id", type: "INTEGER", key: "FK" },
+        { name: "title", type: "VARCHAR(255)" },
+        { name: "content", type: "TEXT" },
+        { name: "is_read", type: "BOOLEAN" },
+        { name: "data", type: "JSON" },
+        { name: "created_at", type: "TIMESTAMP" },
+    ]);
+
+    // ── PASSWORD_RESET_TOKENS table (far right) ──
+    const tTokens = drawTable(svg, 1100, 380, "password_reset_tokens", [
+        { name: "id", type: "SERIAL", key: "PK" },
+        { name: "user_id", type: "INTEGER", key: "FK" },
+        { name: "token", type: "VARCHAR(255)", constraint: "UQ" },
+        { name: "created_at", type: "TIMESTAMP" },
+        { name: "expires_at", type: "TIMESTAMP" },
+        { name: "used_at", type: "TIMESTAMP" },
+    ]);
+
+    // ══════════════════════════════════════
+    //  RELATIONSHIPS
+    // ══════════════════════════════════════
+
+    // ── users (1) ──── apartments (M) : renter_id ──
+    {
+        const from = tableRight(tUsers, 0);
+        const to = tableLeft(tApts, 1);
+        const midX = from.x + 50;
+        drawDashedLine(svg, [[from.x,from.y],[midX,from.y],[midX,to.y],[to.x,to.y]]);
+        crowFootOne(svg, from.x, from.y, 'right');
+        crowFootMany(svg, to.x, to.y, 'left');
+    }
+
+    // ── users (1) ──── messages (M) : sender_id ──
+    {
+        const from = tableRight(tUsers, 1);
+        const to = tableLeft(tMsgs, 1);
+        const midX = from.x + 90;
+        drawDashedLine(svg, [[from.x,from.y],[midX,from.y],[midX,to.y],[to.x,to.y]]);
+        crowFootOne(svg, from.x, from.y, 'right');
+        crowFootMany(svg, to.x, to.y, 'left');
+    }
+
+    // ── users (1) ──── messages (M) : receiver_id ──
+    {
+        const from = tableRight(tUsers, 2);
+        const to = tableLeft(tMsgs, 2);
+        const midX = from.x + 130;
+        drawDashedLine(svg, [[from.x,from.y],[midX,from.y],[midX,to.y],[to.x,to.y]]);
+        crowFootOne(svg, from.x, from.y, 'right');
+        crowFootMany(svg, to.x, to.y, 'left');
+    }
+
+    // ── users (1) ──── notifications (M) : user_id ──
+    {
+        const from = tableRight(tUsers, 3);
+        const to = tableLeft(tNotif, 1);
+        const midX = from.x + 170;
+        const midY = to.y;
+        drawDashedLine(svg, [[from.x,from.y],[midX,from.y],[midX,midY],[to.x,midY]]);
+        crowFootOne(svg, from.x, from.y, 'right');
+        crowFootMany(svg, to.x, midY, 'left');
+    }
+
+    // ── users (1) ──── password_reset_tokens (M) : user_id ──
+    {
+        const from = tableRight(tUsers, 4);
+        const to = tableLeft(tTokens, 1);
+        const midX = from.x + 210;
+        drawDashedLine(svg, [[from.x,from.y],[midX,from.y],[midX,to.y],[to.x,to.y]]);
+        crowFootOne(svg, from.x, from.y, 'right');
+        crowFootMany(svg, to.x, to.y, 'left');
+    }
+
+    // ══════════════════════════════════════
+    //  LABELS on relationships
+    // ══════════════════════════════════════
+    function relLabel(svg, x, y, text) {
+        const t = el("text", {
+            x, y, "text-anchor": "middle", "dominant-baseline": "middle",
+            fill: "#a6adc8", "font-size": "10", "font-style": "italic",
+            "font-family": "Segoe UI, sans-serif"
+        });
+        t.textContent = text;
+        svg.appendChild(t);
+    }
+
+    relLabel(svg, 395, 365, "renter_id");
+    relLabel(svg, 420, 730, "sender_id");
+    relLabel(svg, 460, 756, "receiver_id");
+    relLabel(svg, 700, 645, "user_id");
+    relLabel(svg, 780, 485, "user_id");
+
+    // ══════════════════════════════════════
+    //  CASCADE labels
+    // ══════════════════════════════════════
+    function cascadeLabel(svg, x, y) {
+        svg.appendChild(el("rect", {
+            x: x - 28, y: y - 8, width: 56, height: 16, rx: 3,
+            fill: "rgba(243,139,168,0.1)", stroke: C.fkColor, "stroke-width": 0.6
+        }));
+        const t = el("text", {
+            x, y: y + 1, "text-anchor": "middle", "dominant-baseline": "middle",
+            fill: C.fkColor, "font-size": "8", "font-weight": "600",
+            "font-family": "Segoe UI, sans-serif"
+        });
+        t.textContent = "CASCADE";
+        svg.appendChild(t);
+    }
+
+    // Messages, notifications, tokens all have ON DELETE CASCADE
+    cascadeLabel(svg, 520, 718);
+    cascadeLabel(svg, 520, 744);
+    cascadeLabel(svg, 1050, 720);
+    cascadeLabel(svg, 1100, 420);
+
+    // ══════════════════════════════════════
+    //  LEGEND
+    // ══════════════════════════════════════
+    const lx = W - 380, ly = H - 110;
+    svg.appendChild(el("rect", {
+        x: lx, y: ly, width: 360, height: 95, rx: 8,
+        fill: C.tableBg, stroke: C.tableBorder, "stroke-width": 1
+    }));
+
+    function legendKey(x, y, color, label) {
+        svg.appendChild(el("circle", {
+            cx: x + 8, cy: y - 1, r: 4,
+            fill: "none", stroke: color, "stroke-width": 1.5
+        }));
+        svg.appendChild(el("line", {
+            x1: x + 8, y1: y + 3, x2: x + 8, y2: y + 8,
+            stroke: color, "stroke-width": 1.5
+        }));
+        svg.appendChild(el("line", {
+            x1: x + 8, y1: y + 6, x2: x + 11, y2: y + 6,
+            stroke: color, "stroke-width": 1.2
+        }));
+        const t = el("text", {
+            x: x + 22, y: y + 3, "dominant-baseline": "middle",
+            fill: C.colText, "font-size": "11.5",
+            "font-family": "Segoe UI, sans-serif"
+        });
+        t.textContent = label;
+        svg.appendChild(t);
+    }
+
+    legendKey(lx + 15, ly + 18, C.pkColor, "PK — Primary Key");
+    legendKey(lx + 15, ly + 42, C.fkColor, "FK — Foreign Key");
+
+    // UQ badge in legend
+    svg.appendChild(el("rect", {
+        x: lx + 195, y: ly + 10, width: 26, height: 16, rx: 3,
+        fill: "rgba(203,166,247,0.15)", stroke: C.uniqueColor, "stroke-width": 0.8
+    }));
+    let lt = el("text", {
+        x: lx + 208, y: ly + 19, "text-anchor": "middle",
+        "dominant-baseline": "middle",
+        fill: C.uniqueColor, "font-size": "8.5", "font-weight": "600",
+        "font-family": "Segoe UI, sans-serif"
+    });
+    lt.textContent = "UQ";
+    svg.appendChild(lt);
+    lt = el("text", {
+        x: lx + 230, y: ly + 19, "dominant-baseline": "middle",
+        fill: C.colText, "font-size": "11.5",
+        "font-family": "Segoe UI, sans-serif"
+    });
+    lt.textContent = "= Unique";
+    svg.appendChild(lt);
+
+    // CASCADE badge in legend
+    svg.appendChild(el("rect", {
+        x: lx + 195, y: ly + 34, width: 56, height: 16, rx: 3,
+        fill: "rgba(243,139,168,0.1)", stroke: C.fkColor, "stroke-width": 0.6
+    }));
+    lt = el("text", {
+        x: lx + 223, y: ly + 43, "text-anchor": "middle",
+        "dominant-baseline": "middle",
+        fill: C.fkColor, "font-size": "8", "font-weight": "600",
+        "font-family": "Segoe UI, sans-serif"
+    });
+    lt.textContent = "CASCADE";
+    svg.appendChild(lt);
+    lt = el("text", {
+        x: lx + 260, y: ly + 43, "dominant-baseline": "middle",
+        fill: C.colText, "font-size": "11.5",
+        "font-family": "Segoe UI, sans-serif"
+    });
+    lt.textContent = "= ON DELETE CASCADE";
+    svg.appendChild(lt);
+
+    // Dashed line
+    svg.appendChild(el("line", {
+        x1: lx + 15, y1: ly + 72, x2: lx + 55, y2: ly + 72,
+        stroke: C.lineColor, "stroke-width": 2, "stroke-dasharray": "8,4"
+    }));
+    lt = el("text", {
+        x: lx + 65, y: ly + 73, "dominant-baseline": "middle",
+        fill: C.colText, "font-size": "11.5",
+        "font-family": "Segoe UI, sans-serif"
+    });
+    lt.textContent = "Non-identifying relationship";
+    svg.appendChild(lt);
+
+    // VARCHAR[] note
+    lt = el("text", {
+        x: lx + 15, y: ly + 90, "dominant-baseline": "middle",
+        fill: C.typeText, "font-size": "10",
+        "font-family": "Consolas, monospace"
+    });
+    lt.textContent = "VARCHAR[] = PostgreSQL ARRAY type";
+    svg.appendChild(lt);
+
+    </script>
+</body>
+</html>

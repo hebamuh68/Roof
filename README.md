@@ -85,7 +85,7 @@ pnpm run dev  # or npm run dev
 
 ```env
 # Database
-DATABASE_URL=postgresql://username:password@localhost:5432/roof_db
+DATABASE_URL=postgresql://username:password@localhost:5432/roof
 
 # Elasticsearch
 ELASTIC_URL=https://localhost:9200

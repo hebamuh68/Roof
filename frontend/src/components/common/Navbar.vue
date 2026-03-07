@@ -26,7 +26,7 @@
                     : 'text-white border-b-2 border-green-500'
                   : isHomePage
                     ? 'text-white hover:text-gray-200'
-                    : 'text-gray-500 hover:text-gray-900',
+                    : 'text-gray-500 hover:text-gray-300',
                 'pb-1 text-sm font-medium whitespace-nowrap'
               ]"
             >

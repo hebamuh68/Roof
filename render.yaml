@@ -16,7 +16,7 @@ services:
         value: "1"
       - key: DATABASE_URL
         fromDatabase:
-          name: roof-db
+          name: roof
           property: connectionString
       - key: SECRET_KEY
         generateValue: true
@@ -48,7 +48,7 @@ services:
 
 # PostgreSQL Database
 databases:
-  - name: roof-db
+  - name: roof
     region: oregon
     plan: free
     databaseName: roof

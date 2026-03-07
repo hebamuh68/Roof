@@ -48,7 +48,7 @@ brew services start postgresql@14
 
 ```bash
 # Create database
-createdb roof_db
+createdb roof
 ```
 
 ### 3. Set Up Backend
@@ -119,7 +119,7 @@ If you get connection errors:
 
 1. Make sure PostgreSQL is running: `brew services start postgresql@14`
 2. Check your database URL in `backend/.env`
-3. Ensure the database exists: `createdb roof_db`
+3. Ensure the database exists: `createdb roof`
 
 ### Import Errors
 
@@ -167,7 +167,7 @@ ROOF/
 Key environment variables in `backend/.env`:
 
 ```env
-DATABASE_URL=postgresql://your_username@localhost:5432/roof_db
+DATABASE_URL=postgresql://your_username@localhost:5432/roof
 ELASTIC_URL=http://localhost:9200
 ELASTIC_USER=elastic
 ELASTIC_PASSWORD=changeme
