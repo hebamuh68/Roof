@@ -16,47 +16,30 @@ router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
 @router.get("/", response_model=NotificationListResponse)
 def get_notifications(
-    skip: int = Query(default=0, ge=0, description="Number of records to skip"),
-    limit: int = Query(default=50, ge=1, le=100, description="Max records to return"),
-    unread_only: bool = Query(default=False, description="Only return unread notifications"),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=100),
+    unread_only: bool = Query(default=False),
     db: Session = Depends(get_db),
-    current_user: UserDB = Depends(get_current_user)
+    current_user: UserDB = Depends(get_current_user),
 ):
-    """
-    Get all notifications for the current user with pagination.
-
-    Returns notifications sorted by creation date (newest first).
-    """
     notifications, total, unread_count = notifications_service.get_user_notifications(
-        db=db,
-        user_id=current_user.id,
-        skip=skip,
-        limit=limit,
-        unread_only=unread_only
+        db=db, user_email=current_user.email, skip=skip, limit=limit, unread_only=unread_only
     )
-
     return NotificationListResponse(
-        notifications=[
-            NotificationResponse.model_validate(n) for n in notifications
-        ],
+        notifications=[NotificationResponse.model_validate(n) for n in notifications],
         total=total,
         unread_count=unread_count,
         skip=skip,
-        limit=limit
+        limit=limit,
     )
 
 
 @router.get("/unread-count", response_model=dict)
 def get_unread_count(
     db: Session = Depends(get_db),
-    current_user: UserDB = Depends(get_current_user)
+    current_user: UserDB = Depends(get_current_user),
 ):
-    """
-    Get the count of unread notifications for the current user.
-
-    Useful for displaying notification badges.
-    """
-    count = notifications_service.get_unread_count(db, current_user.id)
+    count = notifications_service.get_unread_count(db, current_user.email)
     return {"unread_count": count}
 
 
@@ -64,17 +47,10 @@ def get_unread_count(
 def get_notification(
     notification_id: int,
     db: Session = Depends(get_db),
-    current_user: UserDB = Depends(get_current_user)
+    current_user: UserDB = Depends(get_current_user),
 ):
-    """
-    Get a single notification by ID.
-
-    Only accessible by the notification's target user.
-    """
     notification = notifications_service.get_notification_by_id(
-        db=db,
-        notification_id=notification_id,
-        user_id=current_user.id
+        db=db, notification_id=notification_id, user_email=current_user.email
     )
     return NotificationResponse.model_validate(notification)
 
@@ -83,15 +59,10 @@ def get_notification(
 def mark_notification_read(
     notification_id: int,
     db: Session = Depends(get_db),
-    current_user: UserDB = Depends(get_current_user)
+    current_user: UserDB = Depends(get_current_user),
 ):
-    """
-    Mark a single notification as read.
-    """
     notification = notifications_service.mark_notification_as_read(
-        db=db,
-        notification_id=notification_id,
-        user_id=current_user.id
+        db=db, notification_id=notification_id, user_email=current_user.email
     )
     return NotificationResponse.model_validate(notification)
 
@@ -100,17 +71,10 @@ def mark_notification_read(
 def mark_notifications_read(
     request: NotificationMarkReadRequest,
     db: Session = Depends(get_db),
-    current_user: UserDB = Depends(get_current_user)
+    current_user: UserDB = Depends(get_current_user),
 ):
-    """
-    Mark multiple notifications as read.
-
-    If notification_ids is not provided, marks ALL notifications as read.
-    """
     count = notifications_service.mark_notifications_as_read(
-        db=db,
-        user_id=current_user.id,
-        notification_ids=request.notification_ids
+        db=db, user_email=current_user.email, notification_ids=request.notification_ids
     )
     return {"message": f"Marked {count} notifications as read", "count": count}
 
@@ -119,38 +83,21 @@ def mark_notifications_read(
 def delete_notification(
     notification_id: int,
     db: Session = Depends(get_db),
-    current_user: UserDB = Depends(get_current_user)
+    current_user: UserDB = Depends(get_current_user),
 ):
-    """
-    Delete a single notification.
-
-    Only accessible by the notification's target user.
-    """
     notifications_service.delete_notification(
-        db=db,
-        notification_id=notification_id,
-        user_id=current_user.id
+        db=db, notification_id=notification_id, user_email=current_user.email
     )
     return {"message": "Notification deleted successfully"}
 
 
 @router.delete("/", response_model=dict)
 def delete_all_notifications(
-    read_only: bool = Query(
-        default=False,
-        description="If true, only delete read notifications"
-    ),
+    read_only: bool = Query(default=False),
     db: Session = Depends(get_db),
-    current_user: UserDB = Depends(get_current_user)
+    current_user: UserDB = Depends(get_current_user),
 ):
-    """
-    Delete all notifications for the current user.
-
-    Optionally only delete read notifications to preserve unread ones.
-    """
     count = notifications_service.delete_all_notifications(
-        db=db,
-        user_id=current_user.id,
-        read_only=read_only
+        db=db, user_email=current_user.email, read_only=read_only
     )
     return {"message": f"Deleted {count} notifications", "count": count}

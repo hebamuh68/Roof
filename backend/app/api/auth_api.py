@@ -4,275 +4,74 @@ from pydantic import BaseModel, EmailStr, Field
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from app.models.auth_pyd import Token, RefreshTokenRequest
-from app.models.user_pyd import UserData, UserLogin, UserResponse
-from app.schemas.user_sql import UserDB as User
+from app.models.user_pyd import UserCreate, UserLogin, UserResponse
+from app.schemas.user_sql import UserDB
 from app.database.database import get_db
 from app.services.auth_service import create_user, login_user, get_user, refresh_access_token
 from app.middleware.auth_middleware import get_current_user
-from app.utils.password_reset import create_password_reset_token, verify_reset_token, mark_token_as_used
-from app.utils.email import send_password_reset_email, send_password_reset_confirmation
 from app.utils.auth import get_password_hash
-from app.utils.validators import (
-    get_password_strength_score,
-    validate_profile_completeness,
-    get_profile_completion_tips
-)
+from app.utils.validators import get_password_strength_score
 
-# Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter()
 
+
 @router.post("/auth/register", response_model=dict)
-@limiter.limit("5/hour")  # 5 registrations per hour per IP
-async def register(request: Request, user_data: UserData, db: Session = Depends(get_db)):
+@limiter.limit("5/hour")
+async def register(request: Request, user_data: UserCreate, db: Session = Depends(get_db)):
     return create_user(user_data, db)
 
+
 @router.post("/auth/login", response_model=Token)
-@limiter.limit("10/minute")  # 10 login attempts per minute per IP
+@limiter.limit("10/minute")
 async def login(request: Request, credentials: UserLogin, db: Session = Depends(get_db)):
     return login_user(credentials, db)
 
+
 @router.post("/auth/refresh", response_model=Token)
-@limiter.limit("20/minute")  # 20 refresh attempts per minute per IP
+@limiter.limit("20/minute")
 async def refresh_token(
     request: Request,
     token_request: RefreshTokenRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    """
-    Refresh access token using a valid refresh token.
-
-    When the access token expires, clients can use their refresh token
-    to obtain a new access token without requiring the user to log in again.
-
-    Args:
-        token_request: Contains the refresh token
-        db: Database session
-
-    Returns:
-        Token: New access token with expiration time
-
-    Raises:
-        HTTPException 401: If refresh token is invalid or expired
-    """
     return refresh_access_token(token_request.refresh_token, db)
 
 
 @router.get("/auth/me", response_model=UserResponse)
-async def get_me(current_user: User = Depends(get_current_user)):
+async def get_me(current_user: UserDB = Depends(get_current_user)):
     return get_user(current_user)
 
 
-# ===========================
-# Password Reset Endpoints
-# ===========================
-
-class PasswordResetRequest(BaseModel):
-    """Request model for password reset."""
-    email: EmailStr
-
-
-class PasswordResetConfirm(BaseModel):
-    """Request model for confirming password reset."""
-    token: str
-    new_password: str = Field(..., min_length=8, description="New password (minimum 8 characters)")
-
-
-@router.post("/auth/request-password-reset")
-@limiter.limit("3/hour")  # 3 password reset requests per hour per IP
-async def request_password_reset(
-    request: Request,
-    reset_request: PasswordResetRequest,
-    db: Session = Depends(get_db)
-):
-    """
-    Request a password reset link.
-
-    Sends a password reset email to the user if the email exists in the system.
-    Always returns success to prevent email enumeration attacks.
-
-    Security Features:
-    - Rate limited to 3 requests/hour per IP
-    - Always returns success (prevents account enumeration)
-    - Invalidates previous reset tokens
-    - Tokens expire after 24 hours
-
-    Args:
-        reset_request: Contains the user's email address
-        db: Database session
-
-    Returns:
-        dict: Success message (same for valid and invalid emails)
-
-    Example:
-        >>> POST /auth/request-password-reset
-        >>> {"email": "user@example.com"}
-        >>> Response: {"message": "If an account exists..."}
-    """
-    # Look up user
-    user = db.query(User).filter(User.email == reset_request.email).first()
-
-    if user:
-        # Generate reset token
-        reset_token = create_password_reset_token(db, user.id)
-
-        # Send email with reset link
-        user_name = f"{user.first_name} {user.last_name}" if user.first_name else None
-        send_password_reset_email(user.email, reset_token, user_name)
-
-    # Always return success to prevent email enumeration
-    # (Same response whether email exists or not)
-    return {
-        "message": "If an account exists with that email, a password reset link has been sent."
-    }
-
-
-@router.post("/auth/reset-password")
-@limiter.limit("5/hour")  # 5 password reset attempts per hour per IP
-async def reset_password(
-    request: Request,
-    reset_data: PasswordResetConfirm,
-    db: Session = Depends(get_db)
-):
-    """
-    Reset password using a valid reset token.
-
-    Validates the token and updates the user's password.
-    Tokens can only be used once and expire after 24 hours.
-
-    Args:
-        reset_data: Contains reset token and new password
-        db: Database session
-
-    Returns:
-        dict: Success message
-
-    Raises:
-        HTTPException 400: If token is invalid, expired, or already used
-        HTTPException 404: If user not found
-
-    Example:
-        >>> POST /auth/reset-password
-        >>> {
-        ...   "token": "abc123...",
-        ...   "new_password": "NewSecurePassword123!"
-        ... }
-        >>> Response: {"message": "Password reset successful"}
-    """
-    try:
-        # Verify token and get user ID
-        user_id = verify_reset_token(db, reset_data.token)
-
-        # Get user
-        user = db.query(User).filter(User.id == user_id).first()
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
-
-        # Update password
-        user.hashed_password = get_password_hash(reset_data.new_password)
-
-        # Mark token as used (prevents reuse)
-        mark_token_as_used(db, reset_data.token)
-
-        # Commit changes
-        db.commit()
-
-        # Send confirmation email
-        user_name = f"{user.first_name} {user.last_name}" if user.first_name else None
-        send_password_reset_confirmation(user.email, user_name)
-
-        return {"message": "Password reset successful"}
-
-    except ValueError as e:
-        # Token validation errors (invalid, expired, already used)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
-
-
-# ===========================
-# Validation Endpoints
-# ===========================
-
 class PasswordStrengthRequest(BaseModel):
-    """Request model for password strength check."""
     password: str
 
 
 @router.post("/auth/check-password-strength")
 async def check_password_strength(password_request: PasswordStrengthRequest):
-    """
-    Check password strength and provide feedback.
-
-    Returns a score (0-100), strength level, and suggestions for improvement.
-    This endpoint can be called before registration to help users create strong passwords.
-
-    Args:
-        password_request: Contains the password to check
-
-    Returns:
-        dict: Password strength analysis with score, level, and suggestions
-
-    Example:
-        >>> POST /auth/check-password-strength
-        >>> {"password": "MyP@ss123"}
-        >>> Response: {
-        ...   "score": 85,
-        ...   "strength": "Strong",
-        ...   "suggestions": [...],
-        ...   "is_acceptable": true
-        ... }
-    """
-    result = get_password_strength_score(password_request.password)
-    return result
+    return get_password_strength_score(password_request.password)
 
 
 @router.get("/auth/profile-completeness")
-async def get_profile_completeness(current_user: User = Depends(get_current_user)):
-    """
-    Get current user's profile completeness analysis.
-
-    Returns completion percentage, missing fields, and tips for improvement.
-
-    Args:
-        current_user: Authenticated user (from token)
-
-    Returns:
-        dict: Profile completeness analysis with percentage, status, missing fields, and tips
-
-    Example:
-        >>> GET /auth/profile-completeness
-        >>> Response: {
-        ...   "completion_percentage": 60,
-        ...   "status": "Partial",
-        ...   "missing_fields": ["phone", "bio"],
-        ...   "tips": ["Add a phone number...", ...]
-        ... }
-    """
-    # Convert user object to dict for validation
+async def get_profile_completeness(current_user: UserDB = Depends(get_current_user)):
     user_dict = {
         "first_name": current_user.first_name,
         "last_name": current_user.last_name,
         "email": current_user.email,
-        "location": current_user.location,
-        "flatmate_pref": current_user.flatmate_pref,
-        "keywords": current_user.keywords,
-        # Optional fields (would need to be added to user model for full implementation)
-        # "phone": getattr(current_user, 'phone', None),
-        # "bio": getattr(current_user, 'bio', None),
-        # "profile_picture": getattr(current_user, 'profile_picture', None),
-        # "verified_email": getattr(current_user, 'verified_email', False)
+        "phone": current_user.phone,
+        "gender": current_user.gender,
+        "job_title": current_user.job_title,
     }
 
-    completeness = validate_profile_completeness(user_dict)
-    tips = get_profile_completion_tips(user_dict)
+    filled = sum(1 for v in user_dict.values() if v)
+    total = len(user_dict)
+    percentage = int((filled / total) * 100)
+
+    missing = [k for k, v in user_dict.items() if not v]
 
     return {
-        **completeness,
-        "tips": tips
+        "completion_percentage": percentage,
+        "missing_fields": missing,
+        "is_complete": len(missing) == 0,
     }

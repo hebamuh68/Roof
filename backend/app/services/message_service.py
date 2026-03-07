@@ -7,159 +7,110 @@ from typing import List
 from fastapi import HTTPException
 from app.services import notifications_service
 
-def send_message(db: Session, sender_id: int, message_data: MessageCreate) -> MessageDB:
-    """
-    Send a new message from sender to receiver.
 
-    Args:
-        db: Database session
-        sender_id: ID of the message sender (current user)
-        message_data: Message content and recipient info
-
-    Returns:
-        Created message object
-    """
-    # Verify receiver exists
-    receiver = db.query(UserDB).filter(UserDB.id == message_data.receiver_id).first()
+def send_message(db: Session, sender_email: str, message_data: MessageCreate) -> MessageDB:
+    receiver = db.query(UserDB).filter(UserDB.email == message_data.receiver_id).first()
     if not receiver:
         raise HTTPException(status_code=404, detail="Receiver not found")
 
-    # Prevent sending message to self
-    if sender_id == message_data.receiver_id:
+    if sender_email == message_data.receiver_id:
         raise HTTPException(status_code=400, detail="Cannot send message to yourself")
 
-    # Get sender info for notification
-    sender = db.query(UserDB).filter(UserDB.id == sender_id).first()
+    sender = db.query(UserDB).filter(UserDB.email == sender_email).first()
 
-    # Create message
     new_message = MessageDB(
-        sender_id=sender_id,
+        sender_id=sender_email,
         receiver_id=message_data.receiver_id,
-        content=message_data.content
+        content=message_data.content,
     )
 
     db.add(new_message)
     db.commit()
     db.refresh(new_message)
 
-    # Create notification for receiver
     if sender:
         sender_name = f"{sender.first_name} {sender.last_name}".strip() or "A user"
         try:
             notifications_service.notify_new_message(
                 db=db,
-                receiver_id=message_data.receiver_id,
-                sender_id=sender_id,
+                receiver_email=message_data.receiver_id,
+                sender_email=sender_email,
                 sender_name=sender_name,
                 message_preview=message_data.content,
-                message_id=new_message.id
+                message_id=new_message.message_id,
             )
         except Exception as e:
-            # Log error but don't fail message sending
             print(f"Failed to create notification: {e}")
 
     return new_message
 
 
-def get_conversations(db: Session, user_id: int) -> List[ConversationPreview]:
-    """
-    Get all conversations for a user with preview of last message.
-
-    Args:
-        db: Database session
-        user_id: Current user ID
-
-    Returns:
-        List of conversation previews
-    """
-    # Get all users the current user has exchanged messages with
+def get_conversations(db: Session, user_email: str) -> List[ConversationPreview]:
     conversations = db.query(
-        # Determine the other user in the conversation
         case(
-            (MessageDB.sender_id == user_id, MessageDB.receiver_id),
-            else_=MessageDB.sender_id
-        ).label('other_user_id'),
-        func.max(MessageDB.created_at).label('last_message_time')
+            (MessageDB.sender_id == user_email, MessageDB.receiver_id),
+            else_=MessageDB.sender_id,
+        ).label("other_user_email"),
+        func.max(MessageDB.created_at).label("last_message_time"),
     ).filter(
-        or_(MessageDB.sender_id == user_id, MessageDB.receiver_id == user_id)
-    ).group_by('other_user_id').all()
+        or_(MessageDB.sender_id == user_email, MessageDB.receiver_id == user_email)
+    ).group_by("other_user_email").all()
 
     result = []
     for conv in conversations:
-        other_user_id = conv.other_user_id
+        other_email = conv.other_user_email
 
-        # Get other user's name
-        other_user = db.query(UserDB).filter(UserDB.id == other_user_id).first()
+        other_user = db.query(UserDB).filter(UserDB.email == other_email).first()
         if not other_user:
             continue
 
-        # Get last message in conversation
         last_message = db.query(MessageDB).filter(
             or_(
-                and_(MessageDB.sender_id == user_id, MessageDB.receiver_id == other_user_id),
-                and_(MessageDB.sender_id == other_user_id, MessageDB.receiver_id == user_id)
+                and_(MessageDB.sender_id == user_email, MessageDB.receiver_id == other_email),
+                and_(MessageDB.sender_id == other_email, MessageDB.receiver_id == user_email),
             )
         ).order_by(MessageDB.created_at.desc()).first()
 
         result.append(ConversationPreview(
-            user_id=other_user_id,
+            user_id=other_email,
             user_name=f"{other_user.first_name} {other_user.last_name}",
             last_message=last_message.content[:100] if last_message else "",
-            last_message_time=conv.last_message_time
+            last_message_time=conv.last_message_time,
         ))
 
-    # Sort by most recent first
     result.sort(key=lambda x: x.last_message_time, reverse=True)
-
     return result
 
 
 def get_conversation_thread(
     db: Session,
-    user_id: int,
-    other_user_id: int,
+    user_email: str,
+    other_email: str,
     skip: int = 0,
-    limit: int = 50
+    limit: int = 50,
 ) -> dict:
-    """
-    Get all messages in a conversation between two users.
-
-    Args:
-        db: Database session
-        user_id: Current user ID
-        other_user_id: ID of the other user in the conversation
-        skip: Number of messages to skip (pagination)
-        limit: Maximum messages to return
-
-    Returns:
-        Dictionary with messages and metadata
-    """
-    # Verify other user exists
-    other_user = db.query(UserDB).filter(UserDB.id == other_user_id).first()
+    other_user = db.query(UserDB).filter(UserDB.email == other_email).first()
     if not other_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Get all messages between the two users
     messages = db.query(MessageDB).filter(
         or_(
-            and_(MessageDB.sender_id == user_id, MessageDB.receiver_id == other_user_id),
-            and_(MessageDB.sender_id == other_user_id, MessageDB.receiver_id == user_id)
+            and_(MessageDB.sender_id == user_email, MessageDB.receiver_id == other_email),
+            and_(MessageDB.sender_id == other_email, MessageDB.receiver_id == user_email),
         )
     ).order_by(MessageDB.created_at.asc()).offset(skip).limit(limit).all()
 
-    # Get total count
     total = db.query(MessageDB).filter(
         or_(
-            and_(MessageDB.sender_id == user_id, MessageDB.receiver_id == other_user_id),
-            and_(MessageDB.sender_id == other_user_id, MessageDB.receiver_id == user_id)
+            and_(MessageDB.sender_id == user_email, MessageDB.receiver_id == other_email),
+            and_(MessageDB.sender_id == other_email, MessageDB.receiver_id == user_email),
         )
     ).count()
 
-    # Convert to response models with user names
     message_responses = []
     for msg in messages:
-        sender = db.query(UserDB).filter(UserDB.id == msg.sender_id).first()
-        receiver = db.query(UserDB).filter(UserDB.id == msg.receiver_id).first()
+        sender = db.query(UserDB).filter(UserDB.email == msg.sender_id).first()
+        receiver = db.query(UserDB).filter(UserDB.email == msg.receiver_id).first()
 
         msg_response = MessageResponse.model_validate(msg)
         msg_response.sender_name = f"{sender.first_name} {sender.last_name}" if sender else "Unknown"
@@ -167,28 +118,17 @@ def get_conversation_thread(
         message_responses.append(msg_response)
 
     return {
-        "other_user_id": other_user_id,
+        "other_user_id": other_email,
         "other_user_name": f"{other_user.first_name} {other_user.last_name}",
         "messages": message_responses,
-        "total_messages": total
+        "total_messages": total,
     }
 
 
-def delete_message(db: Session, user_id: int, message_id: int) -> bool:
-    """
-    Delete a message (only if user is sender or receiver).
-
-    Args:
-        db: Database session
-        user_id: Current user ID
-        message_id: ID of message to delete
-
-    Returns:
-        True if deleted, False if not found or unauthorized
-    """
+def delete_message(db: Session, user_email: str, message_id: int) -> bool:
     message = db.query(MessageDB).filter(
-        MessageDB.id == message_id,
-        or_(MessageDB.sender_id == user_id, MessageDB.receiver_id == user_id)
+        MessageDB.message_id == message_id,
+        or_(MessageDB.sender_id == user_email, MessageDB.receiver_id == user_email),
     ).first()
 
     if not message:
@@ -196,6 +136,4 @@ def delete_message(db: Session, user_id: int, message_id: int) -> bool:
 
     db.delete(message)
     db.commit()
-
     return True
-

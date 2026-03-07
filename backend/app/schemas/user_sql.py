@@ -1,28 +1,24 @@
-from sqlalchemy import Column, Integer, String, Enum, DateTime
-from app.database.database import Base
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy import Column, String, DateTime, Boolean
 from sqlalchemy.orm import relationship
-from datetime import datetime
-import enum
+from app.database.database import Base
 
-class UserType(enum.Enum):
-    SEEKER = "SEEKER"
-    RENTER = "RENTER"
-    ADMIN = "ADMIN"
 
 class UserDB(Base):
-
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, primary_key=True)
+    hashed_password = Column(String, nullable=False)
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
-    email = Column(String, nullable=False, unique=True)
-    location = Column(String, nullable=False)
-    flatmate_pref = Column(ARRAY(String), nullable=True)
-    keywords = Column(ARRAY(String), nullable=True)
-    role = Column(Enum(UserType), nullable=False, default=UserType.SEEKER)
-    hashed_password = Column(String, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    phone = Column(String, nullable=True)
+    gender = Column(String, nullable=True)
+    dob = Column(DateTime, nullable=True)
+    job_title = Column(String, nullable=True)
+    is_admin = Column(Boolean, nullable=False, default=False)
 
-    apartments = relationship("ApartmentDB", back_populates="renter")
+    properties = relationship("PropertyDB", back_populates="owner")
+    reviews = relationship("ReviewDB", back_populates="user")
+    sent_messages = relationship("MessageDB", foreign_keys="MessageDB.sender_id", back_populates="sender")
+    received_messages = relationship("MessageDB", foreign_keys="MessageDB.receiver_id", back_populates="receiver")
+    sent_notifications = relationship("NotificationDB", foreign_keys="NotificationDB.sender_id", back_populates="sender")
+    received_notifications = relationship("NotificationDB", foreign_keys="NotificationDB.receiver_id", back_populates="receiver")

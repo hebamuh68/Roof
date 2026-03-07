@@ -1,28 +1,19 @@
-from sqlalchemy import Column, Integer, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
+
 from app.database.database import Base
 
 
 class MessageDB(Base):
     __tablename__ = "messages"
 
-    id = Column(Integer, primary_key=True, index=True)
-
-    # Sender and receiver relationships
-    sender_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    receiver_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-
-    # Message content
+    message_id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(String, ForeignKey("users.email", ondelete="CASCADE"), nullable=False)
+    receiver_id = Column(String, ForeignKey("users.email", ondelete="CASCADE"), nullable=False)
     content = Column(Text, nullable=False)
+    is_read = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
-    # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Relationships
-    sender = relationship("UserDB", foreign_keys=[sender_id], backref="sent_messages")
-    receiver = relationship("UserDB", foreign_keys=[receiver_id], backref="received_messages")
-
-    def __repr__(self):
-        return f"<Message {self.id}: {self.sender_id} -> {self.receiver_id}>"
+    sender = relationship("UserDB", foreign_keys=[sender_id], back_populates="sent_messages")
+    receiver = relationship("UserDB", foreign_keys=[receiver_id], back_populates="received_messages")

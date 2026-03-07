@@ -401,7 +401,6 @@ def validate_user_registration(
     password: str,
     first_name: str,
     last_name: str,
-    location: Optional[str] = None
 ) -> Tuple[bool, List[str]]:
     """
     Comprehensive validation for user registration.
@@ -443,10 +442,6 @@ def validate_user_registration(
 
     if not last_name or len(last_name.strip()) < 2:
         errors.append("Last name must be at least 2 characters long")
-
-    # Validate location if provided
-    if location and len(location.strip()) < 2:
-        errors.append("Location must be at least 2 characters long")
 
     is_valid = len(errors) == 0
     return is_valid, errors

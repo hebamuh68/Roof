@@ -1,13 +1,12 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from app.api import apartment_api, search_api, user_api, auth_api, admin_api, message_api, notifications_api
-from app.schemas import user_sql, apartment_sql  # Required for SQLAlchemy relationships
+from app.api import property_api, search_api, user_api, auth_api, admin_api, message_api, notifications_api
+from app.schemas import user_sql, property_sql, property_image_sql, review_sql, message_sql, notifications_sql  # noqa: F401
 from app.utils.error_handler import (
     AppException,
     app_exception_handler,
@@ -21,25 +20,21 @@ import os
 from pathlib import Path
 import logging
 
-# Load environment variables
 load_dotenv()
 
-# Setup logging
 setup_logging()
 logger = logging.getLogger(__name__)
 
-# Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI()
 app.state.limiter = limiter
 
-# Register exception handlers
 app.add_exception_handler(AppException, app_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
-# Custom rate limit error handler
+
 @app.exception_handler(RateLimitExceeded)
 async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
     logger.warning(
@@ -53,12 +48,10 @@ async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
         error_code="RATE_LIMIT_EXCEEDED"
     )
 
-# Request logging middleware
+
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next):
-    """Log all HTTP requests and responses."""
     log_request(request)
-    
     try:
         response = await call_next(request)
         log_request(request, response=response)
@@ -67,13 +60,12 @@ async def logging_middleware(request: Request, call_next):
         log_request(request, error=e)
         raise
 
-# CORS for frontend (dev and production)
+
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
 
-# Add production frontend URL if configured
 frontend_url = os.getenv("FRONTEND_URL")
 if frontend_url:
     origins.append(frontend_url)
@@ -86,14 +78,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files for image serving
-# Use the static/images directory in the backend folder
 STATIC_IMAGES_DIR = Path(__file__).parent.parent / "static" / "images"
 STATIC_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static/images", StaticFiles(directory=str(STATIC_IMAGES_DIR)), name="images")
 
 app.include_router(search_api.router)
-app.include_router(apartment_api.router)
+app.include_router(property_api.router)
 app.include_router(user_api.router)
 app.include_router(auth_api.router)
 app.include_router(admin_api.router)
