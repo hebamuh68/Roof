@@ -23,17 +23,12 @@ services:
       - key: FRONTEND_URL
         value: https://roof-frontend.onrender.com
       - key: UPLOAD_DIR
-        value: /opt/render/project/src/uploads
-    disk:
-      name: uploads
-      mountPath: /opt/render/project/src/uploads
-      sizeGB: 1
+        value: /tmp/uploads
 
   # Frontend Static Site
   - type: web
     name: roof-frontend
     runtime: static
-    region: oregon
     plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
